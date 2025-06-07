@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to ProverPump</title>
+    <style>
+        /* Importing Google Fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Exo+2:wght@400&display=swap');
+
+        /* Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Body */
+        body {
+            background: #000;
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Container */
+        .container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        /* Title with Typing Effect */
+        .title {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            font-size: 52px;
+            color: #ff1493;
+        }
+
+        /* Cursor for typing effect */
+        .title::after {
+            content: '|';
+            display: inline-block;
+        }
+
+        /* Blinking class for cursor */
+        .blink-cursor::after {
+            animation: blink 1s step-end infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* Press Enter Text */
+        .press-enter {
+            font-family: 'Exo 2', sans-serif;
+            font-weight: 400;
+            font-size: 24px;
+            color: #fff;
+            position: absolute;
+            top: calc(50% + 225px);
+            transform: translateY(-50%);
+            opacity: 0;
+            display: block;
+        }
+
+        /* Fade-in animation for Press Enter */
+        .fade-in {
+            animation: fadeIn 1.5s ease-in forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Blinking animation for Press Enter */
+        .blink {
+            animation: fadeBlink 1.5s ease-in-out infinite;
+        }
+
+        @keyframes fadeBlink {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 1; }
+        }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            .title {
+                font-size: 36.4px;
+            }
+            .press-enter {
+                font-size: 18px;
+                top: calc(50% + 150px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title" id="typing-text"></h1>
+        <p class="press-enter" id="press-enter">Press Enter</p>
+    </div>
+    <script>
+        // Check if user has visited before
+        if (!localStorage.getItem('hasVisited')) {
+            const text = "Gprove, newcomer!";
+            const typingText = document.getElementById("typing-text");
+            const pressEnter = document.getElementById("press-enter");
+            let index = 0;
+
+            function type() {
+                if (index < text.length) {
+                    typingText.textContent = text.slice(0, index + 1);
+                    index++;
+                    setTimeout(type, 150);
+                } else {
+                    typingText.classList.add('blink-cursor');
+                    setTimeout(() => {
+                        pressEnter.classList.add('fade-in', 'blink');
+                    }, 1000);
+                }
+            }
+
+            // Start typing effect after page load
+            window.onload = () => {
+                setTimeout(type, 500);
+            };
+
+            // Redirect to main app on Enter key press
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter') {
+                    localStorage.setItem('hasVisited', 'true');
+                    window.location.href = 'index.html';
+                }
+            });
+        } else {
+            // If user has visited, redirect immediately to main app
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>

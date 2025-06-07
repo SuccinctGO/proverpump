@@ -1,0 +1,1237 @@
+/* Importing Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Exo+2:wght@400;600&display=swap');
+
+/* Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Main Container */
+.container {
+    background: #000;
+    border: 2.6px solid #ff00ff;
+    border-radius: 16px;
+    padding: 30px;
+    width: 100%;
+    max-width: 1600px;
+    position: relative;
+    z-index: 1;
+    margin: 0 auto;
+}
+
+/* Видаляємо border і shadow для TokenPage */
+.token-page-container {
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.token-page-container .container {
+    border: none;
+    box-shadow: none;
+    max-width: 1600px;
+    padding: 20px;
+    background: #000;
+}
+
+/* Remove border for auth-container .container with higher specificity */
+div.auth-container div.container.mx-auto.p-4 {
+    border: none !important;
+    box-shadow: none !important;
+    border-color: transparent !important;
+}
+
+/* Center the auth-container content (Login/Register widget) */
+.auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    width: 100%;
+}
+
+/* Remove border for auth-container .section-container */
+.auth-container .section-container {
+    border: none !important;
+    box-shadow: none !important;
+    border-color: transparent !important;
+    background: #000;
+}
+
+/* Auth form container */
+.auth-form {
+    width: 100%;
+    max-width: 300px;
+    margin: 0 auto;
+}
+
+/* Navigation Bar */
+.nav-bar {
+    background: #000;
+    border: 2px solid #ff69b4;
+    border-radius: 16px;
+    position: relative;
+    margin: 18.975px auto;
+    padding: 24px 25.3px;
+    width: 1600px;
+    z-index: 1000;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Navigation Buttons - Updated for neon pulse effect with higher specificity */
+button.nav-button {
+    background: linear-gradient(45deg, #00b7eb, #1e90ff) !important; /* Default blue gradient */
+    border: none !important;
+    border-radius: 20px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 18.2px;
+    padding: 7.8px 18.2px;
+    color: #fff !important;
+    cursor: pointer;
+    transform: scale(0.85);
+    transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.4s ease !important;
+}
+
+button.nav-button:hover {
+    transform: scale(0.9);
+    box-shadow: 0 0 15px rgba(30, 144, 255, 0.7) !important; /* Blue neon glow */
+}
+
+button.nav-button.active {
+    background: linear-gradient(45deg, #ff00ff, #ff69b4) !important; /* Pink gradient for active state */
+    box-shadow: 0 0 20px rgba(255, 0, 255, 0.5) !important; /* Pink neon glow */
+}
+
+/* Disconnect Button - Updated for neon pulse effect with higher specificity */
+button.btn-disconnect {
+    background: linear-gradient(45deg, #ff4040, #ff0000) !important; /* Red gradient */
+    border: none !important;
+    border-radius: 20px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 18.2px;
+    padding: 7.8px 18.2px;
+    color: #fff !important;
+    cursor: pointer;
+    transform: scale(0.85);
+    transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+}
+
+button.btn-disconnect:hover {
+    transform: scale(0.9);
+    box-shadow: 0 0 15px rgba(255, 64, 64, 0.7) !important; /* Red neon glow */
+    background: linear-gradient(45deg, #ff3388, #ff66b3) !important; /* Match NavBar.js hover */
+}
+
+/* User Info Widget */
+.user-info {
+    background: transparent;
+    border-radius: 16px;
+    padding: 8px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transform: scale(0.85);
+}
+
+/* Chart Styles */
+.chart-wrapper {
+    position: relative;
+    margin-bottom: 40px;
+    border-radius: 16px;
+    margin-top: 0;
+    z-index: 1;
+}
+
+.chart-container {
+    position: relative;
+    width: 100%;
+    height: 500px;
+    margin: 0;
+    padding: 0;
+    background: #000;
+    border: 2px solid #ff00ff;
+    border-radius: 16px;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+/* Для TokenPage чітко задаємо розміри графіка */
+.token-page-container .chart-container {
+    width: 1000px;
+    height: 600px;
+    border: 2px solid #ff00ff;
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.chart-logo {
+    position: absolute;
+    left: 10px;
+    bottom: 10px;
+    height: 19px;
+    width: 35px;
+    z-index: 3;
+}
+
+body {
+    background: #000;
+    font-family: 'Exo 2', sans-serif;
+    min-height: 100vh;
+    padding: 20px;
+    position: relative;
+    overflow-x: hidden;
+    color: #fff;
+}
+
+/* My Tokens Wrapper */
+.my-tokens-wrapper {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Create Token Wrapper */
+.create-token-wrapper {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Create Token Widget */
+.create-token-container {
+    max-width: 600px;
+    padding: 25px;
+    background: transparent; /* Прозорий фон */
+    border: none; /* Без межі */
+    border-radius: 12px;
+    font-family: 'Exo 2', sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0 auto;
+}
+
+.form-content {
+    width: 100%;
+    max-width: 500px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.create-token-container label {
+    color: #fff;
+    font-size: 16px;
+    margin-bottom: 8px;
+    width: 100%;
+    text-align: left;
+}
+
+.create-token-container input,
+.create-token-container textarea {
+    width: 100%;
+    padding: 12px;
+    background: #000;
+    border: 2px solid #ff00ff;
+    border-radius: 10px;
+    color: #fff;
+    font-family: 'Exo 2', sans-serif;
+    font-size: 14px;
+    margin-bottom: 20px;
+    outline: none;
+    transition: border-color 0.3s ease;
+}
+
+.create-token-container input:focus,
+.create-token-container textarea:focus {
+    border-color: #ff69b4;
+}
+
+.create-token-container input[type="file"] {
+    padding: 5px;
+}
+
+.create-token-container button {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(45deg, #ff00ff, #ff69b4);
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 18px;
+    line-height: 1.5;
+    text-align: center;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.create-token-container button:hover {
+    background: linear-gradient(45deg, #e600e6, #ff4d94);
+}
+
+/* My Tokens List */
+.token-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(352px, 1fr));
+    gap: 16px;
+    width: 100%;
+    max-width: 1600px;
+    margin: 0 auto;
+    padding-bottom: 10px;
+}
+
+.token-info {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+}
+
+.token-name {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 15.4px;
+    font-weight: 700;
+    color: #ffb6c1;
+    text-shadow: 0 0 10px rgba(255, 105, 180, 0.7);
+}
+
+.token-ticker {
+    font-family: 'Exo 2', sans-serif;
+    color: #fff;
+    font-size: 11px;
+}
+
+.token-ticker-white {
+    font-family: 'Exo 2', sans-serif;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.token-quantity {
+    font-family: 'Exo 2', sans-serif;
+    color: #ff69b4; /* Pink color for token quantity */
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.token-creator {
+    font-family: 'Exo 2', sans-serif;
+    color: #fff;
+    font-size: 13.2px;
+}
+
+.creator-name {
+    font-family: 'Exo 2', sans-serif;
+    color: #ff69b4;
+    font-weight: 600;
+}
+
+.neon-title {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 700;
+    color: #ffb6c1;
+    font-size: 32px;
+    text-shadow: 0 0 10px rgba(255, 105, 180, 0.7);
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.inner-container {
+    background: #000;
+    padding: 15px;
+    margin: 80px 0 10px 0;
+    border: none;
+    border-radius: 16px;
+}
+
+/* Стилі для inner-container у TokenPage */
+.token-page-container .inner-container {
+    margin: 0;
+    border: 2px solid #ff00ff;
+    border-radius: 16px;
+    background: #000;
+}
+
+/* Виправлення для token-info-container */
+.token-page-container .token-info-container.inner-container {
+    border: none;
+    border-radius: 16px;
+    padding: 20px;
+    margin-top: 0;
+    overflow: visible;
+    position: relative;
+    z-index: 10;
+}
+
+/* Прибираємо рамку для Chart і Token Info, але зберігаємо border-radius */
+.token-page-container .chart-wrapper.inner-container,
+.token-page-container .token-info-container.inner-container {
+    border: none;
+    border-radius: 16px;
+}
+
+.section-container {
+    background: #000;
+    padding: 15px;
+    margin: 80px 0 10px 0;
+    border: none;
+    border-radius: 16px;
+}
+
+.notifications-container {
+    position: fixed;
+    top: 0;
+    right: 20px;
+    z-index: 1000;
+}
+
+.notification {
+    position: absolute;
+    background: rgba(0, 0, 0, 0.9);
+    border: 2px solid #ff00ff;
+    border-radius: 16px;
+    padding: 2px 20px;
+    color: #fff;
+    font-family: 'Exo 2', sans-serif;
+    font-size: 14px;
+    animation: slideIn 0.3s ease-out, slideOut 0.3s ease-in 4.7s;
+    z-index: 1000;
+    width: 400px;
+}
+
+@keyframes slideIn {
+    0% { transform: translateX(100%); opacity: 0; }
+    100% { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slideOut {
+    0% { transform: translateX(0); opacity: 1; }
+    100% { transform: translateX(100%); opacity: 0; }
+}
+
+.token-of-day-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    padding: 20px 0;
+}
+
+.token-of-day-card {
+    background: #000;
+    border: 2px solid #ff00ff;
+    border-radius: 24px;
+    padding: 15px;
+    width: 400px;
+    height: 200px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 15px;
+    margin: 0 auto;
+    animation: neonPulse 0.8s ease-in-out infinite;
+    transition: transform 0.3s ease;
+}
+
+.token-of-day-card:hover {
+    transform: scale(1.05);
+}
+
+@keyframes neonPulse {
+    0% {
+        transform: scale(0.95);
+        border-color: #ff00ff;
+        box-shadow: 0 0 8px rgba(255, 0, 255, 0.5);
+    }
+    50% {
+        transform: scale(1.05);
+        border-color: #ff69b4;
+        box-shadow: 0 0 20px rgba(255, 105, 180, 1);
+    }
+    100% {
+        transform: scale(0.95);
+        border-color: #ff00ff;
+        box-shadow: 0 0 8px rgba(255, 0, 255, 0.5);
+    }
+}
+
+.transaction-history {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin: 0 auto;
+    width: 100%;
+    max-width: 800px; /* Increased from 600px to accommodate wider items */
+    flex-wrap: wrap; /* Added to allow wrapping */
+}
+
+.transaction-item {
+    background: linear-gradient(45deg, #ff69b4, #ff00ff);
+    border-radius: 16px;
+    padding: 5px 15px;
+    font-size: 12px;
+    color: #fff;
+    width: 100%;
+    max-width: 220px; /* Increased from 180px */
+    text-align: center;
+    white-space: normal; /* Changed to allow text wrapping */
+    overflow: visible; /* Changed to remove clipping */
+    text-overflow: clip; /* Changed to remove ellipsis */
+}
+
+.transaction-item.buy {
+    background: linear-gradient(45deg, #00ff00, #32cd32);
+}
+
+.transaction-item.sell {
+    background: linear-gradient(45deg, #ff0000, #ff4500);
+}
+
+.transaction-item.create {
+    background: linear-gradient(45deg, #00b7eb, #87ceeb);
+}
+
+.token-image {
+    width: 132px;
+    height: 132px;
+    object-fit: cover;
+    border-radius: 16px;
+    border: 2px solid #ff69b4;
+    max-width: 132px !important;
+    max-height: 132px !important;
+}
+
+.token-of-day-image {
+    width: 165px;
+    height: 165px;
+    object-fit: cover;
+    border-radius: 16px;
+    border: 2px solid #ff69b4;
+    max-width: 165px !important;
+    max-height: 165px !important;
+}
+
+/* Стиль для зображення токена на TokenPage */
+.token-page-container .w-\[130px\] {
+    width: 130px !important;
+    height: 130px !important;
+    max-width: 130px !important;
+    max-height: 130px !important;
+    object-fit: cover !important;
+    border-radius: 50% !important;
+    border: 2px solid #ff69b4 !important;
+    box-sizing: border-box;
+    position: relative;
+    z-index: 10;
+}
+
+.token-title {
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.token-of-day-card .token-name {
+    font-size: 19.8px;
+}
+
+.token-of-day-card .token-ticker {
+    font-size: 13.2px;
+}
+
+.token-of-day-card .token-creator {
+    font-size: 13.2px;
+}
+
+.token-market-cap,
+.token-volume {
+    font-size: 11px;
+    color: #fff;
+    margin: 2px 0;
+}
+
+.token-of-day-card .token-market-cap,
+.token-of-day-card .token-volume {
+    font-size: 13.2px;
+}
+
+.token-card {
+    background: #000;
+    border: 2px solid #ff00ff;
+    border-radius: 24px;
+    padding: 11px;
+    width: 352px;
+    height: 176px;
+    transition: transform 0.3s ease;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 11px;
+}
+
+.token-card:hover {
+    transform: scale(1.05);
+}
+
+.search-input {
+    background: #000;
+    border: 2px solid #ff00ff;
+    border-radius: 16px;
+    padding: 10px;
+    color: #fff;
+    font-family: 'Exo 2', sans-serif;
+    width: 100%;
+    max-width: 400px;
+    outline: none;
+}
+
+.search-input::placeholder {
+    color: #ff69b4;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.pagination button {
+    width: 40px;
+    height: 40px;
+    background: #555;
+    border: none;
+    border-radius: 12px;
+    color: #999;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    line-height: 1;
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+.pagination button:hover {
+    background: #666;
+    color: #bbb;
+}
+
+.pagination button.active {
+    background: linear-gradient(45deg, #ff69b4, #ff00ff);
+    color: #fff;
+}
+
+.pagination button:disabled {
+    background: #444;
+    color: #777;
+    cursor: not-allowed;
+}
+
+._wrapper_husch_9 {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+._select_husch_18 {
+    appearance: none;
+    background: #000;
+    border: 2px solid #ff00ff;
+    border-radius: 16px;
+    color: #fff;
+    font-family: 'Exo 2', sans-serif;
+    padding: 8px 24px 8px 12px;
+    cursor: pointer;
+    outline: none;
+    width: 200px;
+}
+
+._select_husch_18 option {
+    background: #000;
+    color: #fff;
+}
+
+._label_husch_29 {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+.flex.justify-between.items-center.mb-6.mt-8 {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+h1, h2 {
+    font-family: 'Orbitron', sans-serif;
+    color: #ffb6c1;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+h1 { font-size: 40px; }
+h2 { font-size: 28px; }
+
+h3 {
+    font-family: 'Orbitron', sans-serif;
+    color: #ffb6c1;
+    margin-bottom: 15px;
+    font-size: 20px;
+    text-align: center;
+}
+
+p, span, label, div:not(.container):not(.button-container):not(.token-card):not(.comment):not(.chart-container):not(.ticker-info):not(.fast-action-buttons):not(.notification):not(.notifications-container):not(.nav-bar) {
+    font-family: 'Exo 2', sans-serif;
+    color: #fff;
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+.user-info p {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 18.2px;
+    color: #fff;
+}
+
+input, textarea {
+    font-family: 'Exo 2', sans-serif;
+    background: rgba(255, 105, 180, 0.1);
+    border: 2px solid #ff69b4;
+    border-radius: 16px;
+    color: #fff;
+    padding: 10px;
+    font-size: 14px;
+    width: 100%;
+    box-sizing: border-box;
+    margin: 5px 0;
+    transition: border-color 0.3s ease;
+}
+
+input::placeholder, textarea::placeholder {
+    color: #ffb6c1;
+    opacity: 0.7;
+}
+
+input:focus, textarea:focus {
+    border-color: #ff00ff;
+    outline: none;
+}
+
+input.auth-input {
+    width: 100%;
+    max-width: 300px;
+    padding: 10px;
+    font-size: 14px;
+    height: 40px;
+}
+
+input.trade-input {
+    padding: 8px;
+    font-size: 14px;
+    text-align: left;
+    height: 40px;
+}
+
+button.auth-submit-button {
+    width: 100%;
+    max-width: 300px;
+    background: linear-gradient(45deg, #ff00ff, #ff69b4);
+    border: none;
+    color: #fff;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+button.auth-submit-button:hover {
+    background: linear-gradient(45deg, #e600e6, #ff4d94);
+    transform: scale(1.05);
+}
+
+.ticker-info {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-family: 'Orbitron', sans-serif;
+    color: #ffb6c1;
+    font-size: 12px;
+}
+
+.fast-action-buttons {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    font-family: 'Exo 2', sans-serif;
+    color: #D1D5DB;
+    font-size: 12px;
+    margin-top: 5px;
+}
+
+button.fast-action-button {
+    background: none;
+    border: none;
+    padding: 4px 8px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 12px;
+    color: #ff00ff;
+    cursor: pointer;
+    flex: 1;
+    margin: 0 2px;
+}
+
+button.fast-action-button:hover {
+    color: #ffb6c1;
+}
+
+button.fast-action-button.btn-percentage-10 {
+    color: #ff1493;
+}
+
+button.fast-action-button.btn-percentage-25 {
+    color: #c71585;
+}
+
+button.fast-action-button.btn-percentage-50 {
+    color: #8b008b;
+}
+
+button.fast-action-button.btn-percentage-100 {
+    color: #4b0082;
+}
+
+button {
+    font-family: 'Orbitron', sans-serif;
+    background: linear-gradient(45deg, #ff69b4, #ff00ff);
+    border: 2px solid #ff00ff;
+    border-radius: 16px;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+button:hover {
+    transform: scale(1.05);
+}
+
+button.btn-simple {
+    background: linear-gradient(45deg, #4b0082, #8b00ff);
+    border: 2px solid #8b00ff;
+    font-size: 14px;
+    padding: 8px 12px;
+}
+
+button.btn-trade {
+    background: linear-gradient(45deg, #ff69b4, #ff00ff);
+    width: 100%;
+}
+
+button.btn-buy {
+    background: linear-gradient(45deg, #00ff00, #39ff14);
+    border: none;
+    border-radius: 16px 0 0 16px;
+}
+
+button.btn-buy.active {
+    transform: scale(1.05);
+}
+
+button.btn-sell {
+    background: linear-gradient(45deg, #ff4040, #ff0000);
+    border: none;
+    border-radius: 0 16px 16px 0;
+}
+
+button.btn-sell.active {
+    transform: scale(1.05);
+}
+
+button.btn-about {
+    background: linear-gradient(45deg, #ff69b4, #ff00ff);
+    border: 2px solid #ff00ff;
+    font-size: 14px;
+    padding: 8px 12px;
+    border-radius: 16px;
+    color: #fff;
+    font-family: 'Orbitron', sans-serif;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+button.btn-about:hover {
+    transform: scale(1.05);
+}
+
+button.simple-pink-button {
+    background: none;
+    border: none;
+    padding: 0;
+    font-family: 'Exo 2', sans-serif;
+    font-size: 14px;
+    color: #ff69b4;
+    cursor: pointer;
+    text-decoration: underline;
+    transition: color 0.3s ease;
+}
+
+button.simple-pink-button:hover {
+    color: #ffb6c1;
+}
+
+.about-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+}
+
+.about-modal-content {
+    background: #000;
+    border: 2px solid #ff00ff;
+    border-radius: 16px;
+    padding: 20px;
+    max-width: 500px;
+    width: 90%;
+    position: relative;
+}
+
+.bg-gray-600, .btn-timeframe {
+    background: linear-gradient(45deg, #1e90ff, #00b7eb);
+    border: none;
+    border-radius: 20px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 14px;
+    padding: 6px 14px;
+    color: #fff;
+    margin: 0 4px;
+}
+
+.bg-gray-600:hover, .btn-timeframe:hover {
+    transform: scale(1.1);
+}
+
+.bg-purple-600, .btn-timeframe-active {
+    background: linear-gradient(45deg, #ff00ff, #ff69b4);
+    border: none;
+    border-radius: 20px;
+    margin: 0 4px;
+}
+
+.button-container {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin: 10px 0;
+}
+
+.btn-percentage-circle {
+    width: 50px;
+    height: 50px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+}
+
+.btn-percentage-10 {
+    background: linear-gradient(45deg, #ff69b4, #ff1493);
+    border: 2px solid #ff1493;
+}
+
+.btn-percentage-25 {
+    background: linear-gradient(45deg, #ff00ff, #c71585);
+    border: 2px solid #c71585;
+}
+
+.btn-percentage-50 {
+    background: linear-gradient(45deg, #8b008b, #ff00ff);
+    border: 2px solid #8b008b;
+}
+
+.btn-percentage-100 {
+    background: linear-gradient(45deg, #4b0082, #8b00ff);
+    border: 2px solid #4b0082;
+}
+
+.overflow-y-auto {
+    margin-right: 12px !important;
+    padding-right: 12px !important;
+}
+
+/* Specific styles for transactions container */
+.token-page-container .transactions-container.overflow-y-auto {
+    height: 534px !important;
+    overflow-y: auto !important;
+    contain: strict;
+    scrollbar-width: thin;
+    scrollbar-color: #ff69b4 #1a1a1a;
+}
+
+.token-page-container .transactions-container.overflow-y-auto::-webkit-scrollbar {
+    width: 8px;
+}
+
+.token-page-container .transactions-container.overflow-y-auto::-webkit-scrollbar-track {
+    background: #1a1a1a;
+    border-radius: 10px;
+}
+
+.token-page-container .transactions-container.overflow-y-auto::-webkit-scrollbar-thumb {
+    background: #ff69b4;
+    border-radius: 10px;
+}
+
+.token-page-container .transactions-container.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+    background: #ff00ff;
+}
+
+/* Specific styles for holders container */
+.token-page-container .holders-container.overflow-y-auto {
+    height: calc(100% - 40px) !important;
+    overflow-y: auto !important;
+    contain: strict;
+    scrollbar-width: thin;
+    scrollbar-color: #ff69b4 #1a1a1a;
+}
+
+.token-page-container .holders-container.overflow-y-auto::-webkit-scrollbar {
+    width: 8px;
+}
+
+.token-page-container .holders-container.overflow-y-auto::-webkit-scrollbar-track {
+    background: #1a1a1a;
+    border-radius: 10px;
+}
+
+.token-page-container .holders-container.overflow-y-auto::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+}
+
+.token-page-container .holders-container.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+    background: #ff00ff;
+}
+
+/* Specific styles for comments container */
+.token-page-container .comments-container.overflow-y-auto {
+    height: calc(100% - 80px) !important;
+    overflow-y: auto !important;
+    contain: strict;
+    scrollbar-width: thin;
+    scrollbar-color: #ff69b4 #1a1a1a;
+}
+
+.token-page-container .comments-container.overflow-y-auto::-webkit-scrollbar {
+    width: 8px;
+}
+
+.token-page-container .comments-container.overflow-y-auto::-webkit-scrollbar-track {
+    background: #1a1a1a;
+    border-radius: 10px;
+}
+
+.token-page-container .comments-container.overflow-y-auto::-webkit-scrollbar-thumb {
+    background: #ff69b4;
+    border-radius: 10px;
+}
+
+.token-page-container .comments-container.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+    background: #ff00ff;
+}
+
+/* Additional styles from HTML */
+.zk-pump-title:hover {
+    animation: glow 1.5s ease-in-out infinite;
+}
+
+.zk-pump-underline {
+    transition: width 0.4s ease-in-out;
+}
+
+.zk-pump-underline:hover {
+    width: calc(150% - 24.29px);
+}
+
+@keyframes glow {
+    0% { text-shadow: 0 0 7.29px #ff00ff, 0 0 14.57px #ff00ff80; }
+    50% { text-shadow: 0 0 12.14px #ff00ff, 0 0 24.29px #ff00ff; }
+    100% { text-shadow: 0 0 7.29px #ff00ff, 0 0 14.57px #ff00ff80; }
+}
+
+@media (max-width: 640px) {
+    .token-list {
+        grid-template-columns: 1fr;
+    }
+
+    .nav-bar {
+        flex-direction: column;
+        gap: 10px;
+        padding: 15px;
+        height: auto;
+        width: 100%;
+    }
+
+    .nav-buttons-container {
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .nav-button, .btn-disconnect {
+        width: 100%;
+        text-align: center;
+        transform: scale(0.85);
+    }
+
+    .user-info {
+        align-items: center;
+        transform: scale(0.85);
+    }
+
+    .zk-pump-title {
+        font-size: 28px !important;
+    }
+
+    /* Адаптація для Create Token на малих екранах */
+    .create-token-wrapper {
+        min-height: auto;
+        padding: 15px;
+    }
+
+    .create-token-container {
+        padding: 15px;
+        max-width: 100%;
+    }
+
+    .neon-title {
+        font-size: 24px;
+    }
+
+    .form-content {
+        max-width: 100%;
+    }
+
+    .create-token-container input,
+    .create-token-container textarea {
+        font-size: 12px;
+        padding: 10px;
+    }
+
+    .create-token-container button {
+        font-size: 16px;
+        padding: 12px;
+    }
+
+    /* Адаптація для My Tokens на малих екранах */
+    .my-tokens-wrapper {
+        min-height: auto;
+        padding: 15px;
+    }
+
+    .token-card {
+        width: 100%;
+        height: auto;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .token-image {
+        width: 100px;
+        height: 100px;
+        max-width: 100px !important;
+        max-height: 100px !important;
+    }
+
+    .token-name {
+        font-size: 14px;
+    }
+
+    /* Адаптація для Auth на малих екранах */
+    .auth-form {
+        max-width: 100%;
+        padding: 0 15px;
+    }
+
+    .neon-title {
+        font-size: 24px;
+    }
+
+    input.auth-input,
+    button.auth-submit-button {
+        max-width: 100%;
+    }
+
+    /* Адаптація для transaction-history на малих екранах */
+    .transaction-history {
+        flex-direction: column; /* Вертикальне розташування на малих екранах */
+        max-width: 100%; /* Використовує повну ширину */
+        padding: 0 10px;
+    }
+
+    .transaction-item {
+        width: 100%; /* Full width on mobile */
+        max-width: 300px; /* Increased for better readability */
+        font-size: 11px;
+        padding: 5px 10px;
+    }
+}
+
+/* Стилі для TokenPage сітки */
+.token-page-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+}
+
+@media (min-width: 1024px) {
+    .token-page-grid {
+        grid-template-columns: 1000px 1fr;
+        gap: 20px;
+    }
+}
+
+.trade-input::-webkit-inner-spin-button,
+.trade-input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+.trade-input {
+    -moz-appearance: textfield;
+}

@@ -1,0 +1,373 @@
+/* Importing Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Exo+2:wght@400;600&display=swap');
+
+/* All styles are scoped to .auth-wrapper to avoid conflicts with styles.css */
+.auth-wrapper {
+    /* Reset */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    /* Auth Container */
+    .auth-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        width: 100%;
+        background: #000;
+        font-family: 'Exo 2', sans-serif;
+        color: #fff;
+        position: relative;
+    }
+
+    /* Section Container */
+    .section-container {
+        background: #000;
+        border: 2px solid #ff00ff;
+        border-radius: 16px;
+        padding: 30px;
+        max-width: 600px;
+        width: 100%;
+        box-shadow: 0 0 15px rgba(255, 0, 255, 0.5);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    /* Neon Title */
+    .neon-title {
+        font-family: 'Orbitron', sans-serif;
+        font-weight: 700;
+        color: #ffb6c1;
+        font-size: 28px;
+        text-shadow: 0 0 10px rgba(255, 105, 180, 0.7);
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    /* Mnemonic Section */
+    .mnemonic-section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+        width: 100%;
+    }
+
+    /* Mnemonic Title */
+    .mnemonic-title {
+        font-family: 'Orbitron', sans-serif;
+        font-weight: 700;
+        color: #ffb6c1;
+        font-size: 32px;
+        text-shadow: 0 0 12px rgba(255, 105, 180, 0.8);
+        text-align: center;
+        margin-bottom: 10px;
+    }
+
+    /* Mnemonic Subtitle */
+    .mnemonic-subtitle {
+        font-family: 'Exo 2', sans-serif;
+        font-weight: 600;
+        color: #fff;
+        font-size: 16px;
+        text-align: center;
+        max-width: 500px;
+        margin-bottom: 10px;
+    }
+
+    /* Auth Form */
+    .auth-form {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        align-items: center;
+        width: 100%;
+        max-width: 400px;
+    }
+
+    /* Input Fields */
+    .auth-input {
+        width: 100%;
+        padding: 10px;
+        background: #000;
+        border: 2px solid #ff69b4;
+        border-radius: 10px;
+        color: #fff;
+        font-family: 'Exo 2', sans-serif;
+        font-size: 14px;
+        outline: none;
+        transition: border-color 0.3s ease;
+    }
+
+    .auth-input::placeholder {
+        color: #ffb6c1;
+        opacity: 0.7;
+    }
+
+    .auth-input:focus {
+        border-color: #ff00ff;
+    }
+
+    /* Error Message */
+    .text-red-500 {
+        color: #ff4040;
+        font-size: 12px;
+        text-align: center;
+        margin-top: -10px;
+        margin-bottom: 10px;
+    }
+
+    /* Auth Submit Button */
+    .auth-submit-button {
+        width: 100%;
+        max-width: 200px;
+        padding: 12px;
+        background: linear-gradient(45deg, #ff00ff, #ff69b4);
+        border: none;
+        border-radius: 10px;
+        color: #fff;
+        font-family: 'Orbitron', sans-serif;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background 0.3s ease, transform 0.3s ease;
+        margin-top: 5px; /* Moves the Continue button 5px down */
+    }
+
+    .auth-submit-button:hover {
+        background: linear-gradient(45deg, #e600e6, #ff4d94);
+        transform: scale(1.05);
+    }
+
+    /* Simple Pink Button */
+    .simple-pink-button {
+        background: none;
+        border: none;
+        font-family: 'Exo 2', sans-serif;
+        font-size: 14px;
+        color: #ff69b4;
+        text-decoration: underline;
+        cursor: pointer;
+        transition: color 0.3s ease;
+    }
+
+    .simple-pink-button:hover {
+        color: #ffb6c1;
+    }
+
+    /* Copy Text Button */
+    .copy-text-button {
+        background: none;
+        border: none;
+        font-family: 'Exo 2', sans-serif;
+        font-size: 14px;
+        color: #ff69b4;
+        text-align: center;
+        cursor: pointer;
+        margin-top: -21px;
+        transition: color 0.3s ease;
+    }
+
+    .copy-text-button:hover {
+        color: #ffb6c1;
+        animation: none;
+        transform: none;
+    }
+
+    /* Mnemonic Widget */
+    .mnemonic-widget {
+        width: 100%;
+        max-width: 500px;
+        padding: 27.5px 20px;
+        background: #000;
+        border: 2px solid #ff00ff;
+        border-radius: 16px;
+        box-shadow: 0 0 15px rgba(255, 0, 255, 0.5);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    /* Mnemonic Grid (3x4) */
+    .mnemonic-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-bottom: 20px;
+        width: 100%;
+    }
+
+    /* Mnemonic Item */
+    .mnemonic-item {
+        display: flex;
+        align-items: center;
+    }
+
+    /* Mnemonic Number */
+    .mnemonic-number {
+        color: #ff69b4;
+        font-family: 'Exo 2', sans-serif;
+        font-size: 14px;
+        font-weight: 600;
+        width: 24px; /* Fixed width for numbers to align consistently */
+        text-align: right;
+        margin-right: 3px; /* 3px margin from mnemonic word */
+    }
+
+    /* Mnemonic Word */
+    .mnemonic-word {
+        background: #1a1a1a;
+        border: 2px solid #ff69b4;
+        border-radius: 8px;
+        padding: 10px;
+        text-align: center;
+        color: #fff;
+        font-family: 'Exo 2', sans-serif;
+        font-size: 14px;
+        box-shadow: 0 0 5px rgba(255, 105, 180, 0.3);
+        flex: 1;
+    }
+
+    /* Button Container */
+    .button-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+    }
+
+    /* Copy Icon Button */
+    .copy-icon-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px; /* Size for icon button */
+        height: 32px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0;
+        margin: 0 auto; /* Centers button in container */
+    }
+
+    .copy-icon-button .button__icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 16px;
+        height: 16px;
+    }
+
+    .copy-icon-button .mm-icon {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        background-color: #ff69b4;
+        mask-image: url('./images/icons/copy.svg');
+        mask-size: contain;
+        mask-repeat: no-repeat;
+        mask-position: center;
+    }
+
+    .copy-icon-button:hover .mm-icon {
+        background-color: #ffb6c1;
+    }
+
+    /* Animation for Neon Glow */
+    @keyframes neonPulse {
+        0% {
+            box-shadow: 0 0 8px rgba(255, 0, 255, 0.5);
+        }
+        50% {
+            box-shadow: 0 0 15px rgba(255, 105, 180, 1);
+        }
+        100% {
+            box-shadow: 0 0 8px rgba(255, 0, 255, 0.5);
+        }
+    }
+
+    /* Responsive Design */
+    @media (max-width: 640px) {
+        .section-container {
+            padding: 15px;
+            max-width: 90%;
+        }
+
+        .neon-title {
+            font-size: 24px;
+        }
+
+        .mnemonic-title {
+            font-size: 28px;
+        }
+
+        .mnemonic-subtitle {
+            font-size: 14px;
+            max-width: 90%;
+        }
+
+        .auth-form {
+            max-width: 100%;
+        }
+
+        .auth-input {
+            font-size: 12px;
+            padding: 8px;
+        }
+
+        .auth-submit-button {
+            font-size: 14px;
+            padding: 10px;
+            max-width: 180px;
+        }
+
+        .mnemonic-widget {
+            max-width: 100%;
+            padding: 22.5px 15px;
+        }
+
+        .mnemonic-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        .mnemonic-item {
+            flex-direction: row;
+        }
+
+        .mnemonic-number {
+            font-size: 12px;
+            width: 20px;
+            margin-right: 3px; /* Consistent 3px margin on mobile */
+        }
+
+        .mnemonic-word {
+            font-size: 12px;
+            padding: 8px;
+        }
+
+        .copy-icon-button {
+            width: 28px;
+            height: 28px;
+        }
+
+        .copy-icon-button .button__icon {
+            width: 14px;
+            height: 14px;
+        }
+
+        .copy-icon-button .mm-icon {
+            width: 14px;
+            height: 14px;
+        }
+
+        .copy-text-button {
+            font-size: 12px;
+            margin-top: -21px;
+        }
+    }
+}
