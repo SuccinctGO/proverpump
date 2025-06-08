@@ -1,7 +1,7 @@
 {
   "name": "proverpump",
-  "version": "1.0.1",
-  "description": "ProverPump Application",
+  "version": "1.0.2",
+  "description": "ProverPump - A Web3 Application",
   "main": "server/index.js",
   "scripts": {
     "start": "node server/index.js",
