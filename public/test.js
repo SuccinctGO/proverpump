@@ -140,12 +140,13 @@ function App() {
             reconnectionAttempts: 5,
             reconnectionDelay: 1000,
             extraHeaders: {
-                'Origin': 'https://proverpump.vercel.app'
+                'Origin': window.location.origin
             }
         });
         socket.on('connect', () => {
             console.log('Socket connected successfully');
             console.log('Socket ID:', socket.id);
+            console.log('Socket transport:', socket.io.engine.transport.name);
             socket.emit('subscribeTokens');
         });
         socket.on('newToken', (newToken) => {
@@ -153,6 +154,7 @@ function App() {
         });
         socket.on('disconnect', (reason) => {
             console.log('Socket disconnected:', reason);
+            console.log('Socket connection state:', socket.connected);
         });
         socket.on('connect_error', (error) => {
             console.error('Socket connection error:', error);

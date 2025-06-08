@@ -16,6 +16,23 @@ require('dotenv').config();
 const app = express();
 const server = http.createServer(app);
 
+// CORS configuration
+const corsOptions = {
+  origin: ['https://proverpump.vercel.app', 'https://proverpump-git-main-istzzzs-projects.vercel.app'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'Accept', 'X-Requested-With'],
+  credentials: true
+};
+
+app.use(cors(corsOptions));
+
+// Socket.IO configuration with CORS
+const io = new Server(server, {
+  cors: corsOptions,
+  transports: ['websocket', 'polling'],
+  allowEIO3: true
+});
+
 // Додаємо middleware для логування всіх запитів
 app.use((req, res, next) => {
     console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
@@ -23,41 +40,6 @@ app.use((req, res, next) => {
     console.log('Request body:', req.body);
     console.log('Request origin:', req.headers.origin);
     next();
-});
-
-// Налаштування CORS
-app.use((req, res, next) => {
-    const allowedOrigin = 'https://proverpump.vercel.app';
-    const origin = req.headers.origin;
-
-    console.log('CORS middleware - Origin:', origin);
-    console.log('CORS middleware - Allowed origin:', allowedOrigin);
-
-    if (origin === allowedOrigin) {
-        res.header('Access-Control-Allow-Origin', origin);
-        res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-        res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Origin, Accept, X-Requested-With');
-        res.header('Access-Control-Allow-Credentials', 'true');
-        res.header('Access-Control-Max-Age', '86400');
-    }
-
-    if (req.method === 'OPTIONS') {
-        console.log('Handling OPTIONS request');
-        return res.sendStatus(200);
-    }
-
-    next();
-});
-
-// Налаштування Socket.IO
-const io = new Server(server, {
-    cors: {
-        origin: 'https://proverpump.vercel.app',
-        methods: ['GET', 'POST'],
-        credentials: true,
-        allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'Accept', 'X-Requested-With']
-    },
-    transports: ['websocket', 'polling']
 });
 
 // Додаємо логування для Socket.IO
@@ -84,7 +66,7 @@ app.use((err, req, res, next) => {
     console.error('Request method:', req.method);
     console.error('Request headers:', req.headers);
     console.error('Request body:', req.body);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Internal Server Error', details: err.message });
 });
 
 const upload = multer({ storage: multer.memoryStorage() });
@@ -852,4 +834,5 @@ server.listen(PORT, () => {
         SUPABASE_KEY: process.env.SUPABASE_KEY ? 'Set' : 'Not set',
         JWT_SECRET: process.env.JWT_SECRET ? 'Set' : 'Not set'
     });
+    console.log('CORS enabled for:', corsOptions.origin);
 });
