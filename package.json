@@ -1,0 +1,9 @@
+{
+  "name": "proverpump",
+  "version": "1.0.0",
+  "description": "ProverPump Application",
+  "main": "index.js",
+  "dependencies": {
+    "socket.io-client": "^4.7.4"
+  }
+} 

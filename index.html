@@ -15,9 +15,10 @@
     <script src="https://unpkg.com/bip39@3.0.4/dist/bip39.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.1.7/dist/lightweight-charts.standalone.production.min.js"></script>
+    <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
     <script src="./widget.js?v=2"></script>
-    <script src="/gprove.js"></script>
-    <script>
+    <script src="./gprove.js"></script>
+    <script type="module">
         window.addEventListener('load', () => {
             console.log('LightweightCharts loaded:', !!window.LightweightCharts);
             console.log('React loaded:', !!window.React);
@@ -25,15 +26,16 @@
         });
 
         // Визначаємо window.renderApp для gprove.js
-        window.renderApp = function() {
+        window.renderApp = async function() {
             console.log('index.html: Rendering React App');
-            import('/test.js?v=2').then(module => {
+            try {
+                const module = await import('./test.js?v=2');
                 const App = module.default;
                 console.log('App imported:', App);
                 ReactDOM.render(React.createElement(App), document.getElementById('root'));
-            }).catch(err => {
+            } catch (err) {
                 console.error('index.html: Failed to load test.js:', err);
-            });
+            }
         };
 
         // Перевіряємо, чи перший візит

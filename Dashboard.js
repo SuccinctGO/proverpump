@@ -1,8 +1,9 @@
-import { collection, getDocs, query, orderBy, limit } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
-import { db } from './firebase-config.js';
 import ProveWidget from './ProveWidget.js';
+const io = window.io;
 
 const React = window.React;
+
+const SERVER_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : 'https://proverpump-server.vercel.app';
 
 function Dashboard({ setSelectedTokenId, setView, tokens, user, setWallet }) {
     const [search, setSearch] = React.useState('');
@@ -33,14 +34,12 @@ function Dashboard({ setSelectedTokenId, setView, tokens, user, setWallet }) {
     React.useEffect(() => {
         const loadTransactions = async () => {
             try {
-                const transactionsQuery = query(
-                    collection(db, 'transactions'),
-                    orderBy('timestamp', 'desc'),
-                    limit(3)
-                );
-                const snapshot = await getDocs(transactionsQuery);
-                const allTransactions = snapshot.docs.map(doc => doc.data());
-                setRecentTransactions(allTransactions);
+                const response = await fetch('http://localhost:3000/transactions?limit=3');
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to load transactions');
+                }
+                setRecentTransactions(data);
             } catch (err) {
                 setError('Failed to load transactions');
             }
@@ -58,16 +57,21 @@ function Dashboard({ setSelectedTokenId, setView, tokens, user, setWallet }) {
                     setIsLoadingNicknames(false);
                     return;
                 }
-                const usersSnapshot = await getDocs(collection(db, 'users'));
+                const response = await fetch('http://localhost:3000/users', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userIds }),
+                });
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to load nicknames');
+                }
                 const nicknameMap = {};
                 if (user && user.userId && user.nickname) {
                     nicknameMap[user.userId] = user.nickname;
                 }
-                usersSnapshot.forEach(doc => {
-                    if (userIds.includes(doc.id)) {
-                        const data = doc.data();
-                        nicknameMap[doc.id] = data.nickname || 'Unknown';
-                    }
+                data.forEach(user => {
+                    nicknameMap[user.userId] = user.nickname || 'Unknown';
                 });
                 setNicknames(nicknameMap);
                 setIsLoadingNicknames(false);
@@ -83,43 +87,24 @@ function Dashboard({ setSelectedTokenId, setView, tokens, user, setWallet }) {
         } else {
             setIsLoadingNicknames(false);
         }
-    }, [tokens, user]);
 
-    React.useEffect(() => {
-        if (recentTransactions.length > 0) {
-            const fetchNicknamesForTransactions = async () => {
-                try {
-                    const userIds = [
-                        ...new Set([
-                            ...(Array.isArray(tokens) ? tokens.map(token => token.creatorId) : []),
-                            ...recentTransactions.map(tx => tx.wallet),
-                        ]),
-                    ].filter(id => id);
-                    if (userIds.length === 0) {
-                        setIsLoadingNicknames(false);
-                        return;
-                    }
-                    const usersSnapshot = await getDocs(collection(db, 'users'));
-                    const nicknameMap = {};
-                    if (user && user.userId && user.nickname) {
-                        nicknameMap[user.userId] = user.nickname;
-                    }
-                    usersSnapshot.forEach(doc => {
-                        if (userIds.includes(doc.id)) {
-                            const data = doc.data();
-                            nicknameMap[doc.id] = data.nickname || 'Unknown';
-                        }
-                    });
-                    setNicknames(nicknameMap);
-                    setIsLoadingNicknames(false);
-                } catch (err) {
-                    setError('Nickname loading failed');
-                    setIsLoadingNicknames(false);
-                }
-            };
-            fetchNicknamesForTransactions();
-        }
-    }, [recentTransactions, tokens, user]);
+        // WebSocket для транзакцій
+        const socket = io(SERVER_URL, {
+            withCredentials: true,
+            transports: ['websocket', 'polling']
+        });
+        socket.on('connect', () => {
+            socket.emit('subscribeTransactions');
+        });
+        socket.on('newTransaction', (newTransaction) => {
+            setRecentTransactions((prev) => [newTransaction, ...prev.slice(0, 2)]);
+        });
+        socket.on('disconnect', () => console.log('WebSocket disconnected'));
+
+        return () => {
+            socket.disconnect();
+        };
+    }, [tokens, user]);
 
     React.useEffect(() => {
         localStorage.setItem('proveButtonPosition', JSON.stringify(buttonPosition));
@@ -151,7 +136,6 @@ function Dashboard({ setSelectedTokenId, setView, tokens, user, setWallet }) {
         setIsDragging(false);
     };
 
-    // Remove duplicate tokens based on token.id
     const uniqueTokens = Array.isArray(tokens)
         ? [...new Map(tokens.map(token => [token.id, token])).values()]
         : [];
@@ -432,7 +416,6 @@ function Dashboard({ setSelectedTokenId, setView, tokens, user, setWallet }) {
 
 export default Dashboard;
 
-// Inline styles for the Prove button
 const styles = `
     .prove-button {
         width: 150px;
@@ -491,7 +474,6 @@ const styles = `
     }
 `;
 
-// Inject styles into the document
 const styleSheet = document.createElement('style');
 styleSheet.textContent = styles;
 document.head.appendChild(styleSheet);

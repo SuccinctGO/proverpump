@@ -1,4 +1,4 @@
-function initProverPumpWidget({ containerId, onContinue, apiUrl = 'https://api.succinct.network/prover-status', onComplete }) {
+function initProverPumpWidget({ containerId, onContinue, apiUrl = 'http://localhost:3000/prover-status', onComplete }) {
     function waitForContainer(attempts = 50, interval = 100) {
         return new Promise((resolve, reject) => {
             let currentAttempt = 0;
@@ -106,7 +106,7 @@ function initProverPumpWidget({ containerId, onContinue, apiUrl = 'https://api.s
             widget.className = 'prover-pump-widget';
             widget.innerHTML = `
                 <div class="prover-pump-loader" id="proverPumpLoader"></div>
-                <div class="prover-pump-status-text" id="proverPumpStatusText">Pumping your PROVER status in the Succinct!</div>
+                <div class="prover-pump-status-text" id="proverPumpStatusText">Pumping your PROVER status!</div>
                 <div class="prover-pump-fun-message" id="proverPumpFunMessage"></div>
                 <button class="prover-pump-continue-button" id="proverPumpContinueButton">Continue</button>
             `;
@@ -143,7 +143,14 @@ function initProverPumpWidget({ containerId, onContinue, apiUrl = 'https://api.s
 
             async function checkProverStatus() {
                 try {
-                    await new Promise((resolve) => setTimeout(resolve, 3000)); // Затримка 3 секунди
+                    const token = localStorage.getItem('zkPumpToken');
+                    const response = await fetch(apiUrl, {
+                        headers: { Authorization: `Bearer ${token}` },
+                    });
+                    const data = await response.json();
+                    if (!response.ok) {
+                        throw new Error(data.error || 'Failed to check PROVER status');
+                    }
                     if (onComplete && typeof onComplete === 'function') {
                         await onComplete();
                     }

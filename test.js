@@ -1,5 +1,3 @@
-import { doc, getDoc, setDoc, collection, getDocs, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
-import { db, auth } from './firebase-config.js';
 import TokenPage from './TokenPage.js';
 import CreateToken from './CreateToken.js';
 import Auth from './Auth.js';
@@ -7,9 +5,12 @@ import NavBar from './NavBar.js';
 import Dashboard from './Dashboard.js';
 import MyTokens from './MyTokens.js';
 import TokenCreationWidget from './widget1.js';
-import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
-
 const React = window.React;
+const io = window.io;
+
+const SERVER_URL = window.location.hostname === 'proverpump.vercel.app' 
+  ? 'https://proverpump-server.vercel.app'
+  : 'https://proverpump-server-ewqtdbfip-istzzzs-projects.vercel.app';
 
 const waitForBip39 = () => {
     return new Promise((resolve) => {
@@ -49,78 +50,105 @@ function App() {
     const [view, setView] = React.useState('loading');
     const [selectedTokenId, setSelectedTokenId] = React.useState(null);
     const [showWidget, setShowWidget] = React.useState(false);
-    const [tokens, setTokens] = React.useState([]); // Гарантуємо, що tokens завжди масив
+    const [tokens, setTokens] = React.useState([]);
 
     React.useEffect(() => {
-        const tokensRef = collection(db, 'tokens');
-        const unsubscribeTokens = onSnapshot(tokensRef, (snapshot) => {
-            const tokenList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            setTokens(tokenList || []); // Гарантуємо, що tokenList є масивом
-        }, (err) => {
-            setError('Failed to load tokens');
-            console.error('Token fetch error:', err);
-        });
-
-        const unsubscribeAuth = onAuthStateChanged(auth, async (firebaseUser) => {
-            const storedUserId = localStorage.getItem('zkPumpUserId');
-            if (firebaseUser && storedUserId) {
-                try {
-                    const userRef = doc(db, 'users', storedUserId);
-                    const walletRef = doc(db, 'wallets', storedUserId);
-                    const [userSnap, walletSnap] = await Promise.all([
-                        getDoc(userRef),
-                        getDoc(walletRef),
-                    ]);
-
-                    if (userSnap.exists() && walletSnap.exists()) {
-                        const storedUser = userSnap.data();
-                        const storedWallet = walletSnap.data();
-
-                        if (
-                            storedUser.userId === storedUserId &&
-                            storedUser.nickname &&
-                            storedUser.mnemonic
-                        ) {
-                            const validatedWallet = {
-                                userId: storedUserId,
-                                balance: typeof storedWallet.balance === 'number' ? storedWallet.balance : 10000,
-                                tokenBalances: storedWallet.tokenBalances || {},
-                                address: storedUserId,
-                                tokens: storedWallet.tokens || []
-                            };
-
-                            setUser(storedUser);
-                            setWallet(validatedWallet);
-                            setView('dashboard');
-                        } else {
-                            setError('Invalid user data. Please log in again.');
-                            setView('auth');
-                        }
+        const token = localStorage.getItem('zkPumpToken');
+        if (token) {
+            fetch(`${SERVER_URL}/users/me`, {
+                headers: { Authorization: `Bearer ${token}` },
+            })
+                .then((res) => res.json())
+                .then((data) => {
+                    if (data.user && data.wallet) {
+                        setUser(data.user);
+                        setWallet(data.wallet);
+                        setView('dashboard');
                     } else {
                         setError('Failed to load session. Please log in again.');
                         setView('auth');
-                        localStorage.removeItem('zkPumpUserId');
+                        localStorage.removeItem('zkPumpToken');
                     }
-                } catch (err) {
+                })
+                .catch((err) => {
                     setError('Failed to load session. Please log in again.');
                     setView('auth');
-                    localStorage.removeItem('zkPumpUserId');
+                    localStorage.removeItem('zkPumpToken');
                     console.error('Auth error:', err);
-                }
-            } else {
-                setView('auth');
-                localStorage.removeItem('zkPumpUserId');
-            }
-        }, (err) => {
-            setError('Authentication error. Please log in again.');
+                });
+        } else {
             setView('auth');
-            localStorage.removeItem('zkPumpUserId');
-            console.error('Auth state error:', err);
+        }
+
+        // Завантаження токенів
+        const fetchWithCredentials = (url, options = {}) => {
+            return fetch(url, {
+                ...options,
+                credentials: 'include',
+                headers: {
+                    ...options.headers,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Origin': window.location.origin
+                }
+            });
+        };
+
+        const fetchTokens = async () => {
+            try {
+                const response = await fetchWithCredentials(`${SERVER_URL}/tokens`);
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Failed to fetch tokens');
+                }
+                return await response.json();
+            } catch (error) {
+                console.error('Token fetch error:', error);
+                return [];
+            }
+        };
+
+        fetchTokens()
+            .then((data) => {
+                setTokens(data || []);
+            })
+            .catch((err) => {
+                setError('Failed to load tokens');
+                console.error('Token fetch error:', err);
+            });
+
+        // WebSocket для оновлення токенів
+        const socket = io(SERVER_URL, {
+            withCredentials: true,
+            transports: ['websocket', 'polling'],
+            reconnection: true,
+            reconnectionAttempts: 5,
+            reconnectionDelay: 1000,
+            timeout: 20000,
+            extraHeaders: {
+                'Access-Control-Allow-Origin': window.location.origin,
+                'Origin': window.location.origin
+            }
+        });
+        socket.on('connect', () => {
+            console.log('WebSocket connected');
+            socket.emit('subscribeTokens');
+        });
+        socket.on('newToken', (newToken) => {
+            setTokens((prev) => [...prev, newToken]);
+        });
+        socket.on('disconnect', () => {
+            console.log('WebSocket disconnected');
+        });
+        socket.on('connect_error', (error) => {
+            console.error('Socket connection error:', error);
+        });
+        socket.on('error', (error) => {
+            console.error('Socket error:', error);
         });
 
         return () => {
-            unsubscribeTokens();
-            unsubscribeAuth();
+            socket.disconnect();
         };
     }, []);
 
@@ -139,7 +167,7 @@ function App() {
                             'div',
                             null,
                             React.createElement(NavBar, { user, wallet, setView, setUser, setWallet, activeTab: 'dashboard' }),
-                            React.createElement(Dashboard, { setSelectedTokenId, setView, tokens, user }) // Додаємо user
+                            React.createElement(Dashboard, { setSelectedTokenId, setView, tokens, user, setWallet })
                         )
                     ),
                     view === 'create' && (

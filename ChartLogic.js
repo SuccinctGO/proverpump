@@ -25,7 +25,9 @@ function ChartLogic({ timeframe, candles, chartContainerRef, isLoaded, setError 
             !isNaN(candle.open) &&
             !isNaN(candle.high) &&
             !isNaN(candle.low) &&
-            !isNaN(candle.close)
+            !isNaN(candle.close) &&
+            candle.high >= candle.low &&
+            candle.close >= 0
         );
     };
 
@@ -33,13 +35,27 @@ function ChartLogic({ timeframe, candles, chartContainerRef, isLoaded, setError 
         const candleData = Object.values(candles[timeframe] || {})
             .filter(candle => validateCandle(candle))
             .sort((a, b) => a.time - b.time)
-            .map((c) => ({
+            .map(c => ({
                 time: c.time,
-                open: c.open,
-                high: c.high,
-                low: c.low,
-                close: c.close,
+                open: parseFloat(c.open.toFixed(6)),
+                high: parseFloat(c.high.toFixed(6)),
+                low: parseFloat(c.low.toFixed(6)),
+                close: parseFloat(c.close.toFixed(6)),
             }));
+
+        if (candleData.length === 0) {
+            const now = Math.floor(Date.now() / 1000);
+            const defaultPrice = 0.01;
+            console.warn(`No valid candles for timeframe ${timeframe}, using default candle`);
+            return [{
+                time: now - timeframeIntervals[timeframe],
+                open: defaultPrice,
+                high: defaultPrice,
+                low: defaultPrice,
+                close: defaultPrice,
+            }];
+        }
+
         return candleData;
     };
 
@@ -63,13 +79,15 @@ function ChartLogic({ timeframe, candles, chartContainerRef, isLoaded, setError 
                 timeScale: {
                     visible: true,
                     timeVisible: true,
-                    secondsVisible: true,
+                    secondsVisible: timeframe === '1s',
                     barSpacing: 10,
                     minBarSpacing: 2,
                     rightOffset: 10,
                 },
                 priceScale: {
                     mode: 0,
+                    autoScale: true,
+                    borderColor: '#ff69b4',
                 },
             });
 
@@ -92,7 +110,8 @@ function ChartLogic({ timeframe, candles, chartContainerRef, isLoaded, setError 
             chartContainerRef.current.style.borderRadius = '16px';
             chartContainerRef.current.style.overflow = 'hidden';
         } catch (err) {
-            setError('Chart initialization failed');
+            setError('Chart initialization failed: ' + err.message);
+            console.error('Chart init error:', err);
         }
     };
 
@@ -102,27 +121,17 @@ function ChartLogic({ timeframe, candles, chartContainerRef, isLoaded, setError 
         }
         try {
             const chartData = aggregateCandles();
-            if (chartData.length === 0) {
-                chartRef.current.setData([]);
-                lastCandlesHashRef.current = '';
-                return;
-            }
-            const candlesHash = JSON.stringify(
-                chartData.map((c) => ({
-                    time: c.time,
-                    open: c.open,
-                    high: c.high,
-                    low: c.low,
-                    close: c.close,
-                }))
-            );
+            const candlesHash = JSON.stringify(chartData);
             if (candlesHash === lastCandlesHashRef.current) {
                 return;
             }
-            chartRef.current.setData(chartData.slice(-10000));
+            chartRef.current.setData(chartData.slice(-1000));
+            chartInstanceRef.current.timeScale().fitContent();
             lastCandlesHashRef.current = candlesHash;
+            console.debug(`Chart updated for timeframe ${timeframe}, candles: ${chartData.length}`);
         } catch (err) {
-            setError('Failed to update chart');
+            setError('Failed to update chart: ' + err.message);
+            console.error('Chart update error:', err);
         }
     }, [timeframe, candles, isLoaded, setError]);
 
@@ -133,7 +142,7 @@ function ChartLogic({ timeframe, candles, chartContainerRef, isLoaded, setError 
                 try {
                     chartInstanceRef.current.remove();
                 } catch (err) {
-                    setError('Error cleaning up chart');
+                    console.error('Chart cleanup error:', err);
                 }
                 chartInstanceRef.current = null;
                 chartRef.current = null;

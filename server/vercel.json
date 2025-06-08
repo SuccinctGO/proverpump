@@ -1,0 +1,35 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "index.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/index.js",
+      "headers": {
+        "Access-Control-Allow-Origin": "https://proverpump.vercel.app",
+        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+        "Access-Control-Allow-Headers": "X-Requested-With, Content-Type, Accept, Authorization",
+        "Access-Control-Allow-Credentials": "true"
+      }
+    }
+  ],
+  "env": {
+    "DB_USER": "postgres.fzvpbsoybaecxoltiqjf",
+    "DB_HOST": "aws-0-eu-central-1.pooler.supabase.com",
+    "DB_NAME": "postgres",
+    "DB_PASSWORD": "sdfsfsdfc3fc23fcdsfc",
+    "DB_PORT": "6543",
+    "SUPABASE_URL": "https://fzvpbsoybaecxoltiqjf.supabase.co",
+    "SUPABASE_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ6dnBic295YmFlY3hvbHRpcWpmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkzMzQzMTUsImV4cCI6MjA2NDkxMDMxNX0.eLNIntoV2yw-2d44QH0sgs53RmgE7Gao2QOFFJUqdv8",
+    "JWT_SECRET": "idmz5x43qwUs4vqmpq8waNeCtYz1vsFMDdGfeUcfd5KvK1JZ7HjstDhARFFVY6coPmMpyhqfvj8CxpU9odPY+w==",
+    "FRONTEND_URL": "https://proverpump.vercel.app",
+    "DISCORD_CLIENT_ID": "1380863605796241448",
+    "DISCORD_CLIENT_SECRET": "your-discord-client-secret",
+    "DISCORD_REDIRECT_URI": "https://proverpump-server.vercel.app/users/discord/callback"
+  }
+} 

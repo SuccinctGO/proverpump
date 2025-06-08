@@ -1,6 +1,3 @@
-import { doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
-import { db } from './firebase-config.js';
-
 const React = window.React;
 
 const styles = {
@@ -62,17 +59,13 @@ const ProveWidget = ({ userId, setWallet, showWidget, setShowWidget, setError })
 
     const handleClick = async () => {
         const currentTime = Date.now();
-        console.log('handleClick started, userId:', userId, 'setWallet type:', typeof setWallet, 'currentTime:', currentTime, 'lastClickTime:', lastClickTime);
-        
         if (!isClickAllowed || currentTime - lastClickTime < 1000) {
-            console.log('Click rate limit exceeded');
             setMessage('Please wait 1 second between clicks');
             setTimeout(() => setMessage(''), 2000);
             return;
         }
 
         if (!userId) {
-            console.log('No userId, setting error');
             setError('User not authenticated');
             setShowWidget(false);
             return;
@@ -81,47 +74,30 @@ const ProveWidget = ({ userId, setWallet, showWidget, setShowWidget, setError })
         try {
             setIsClickAllowed(false);
             setLastClickTime(currentTime);
-            const walletRef = doc(db, 'wallets', userId);
-            console.log('Fetching wallet for userId:', userId);
-            const walletSnap = await getDoc(walletRef);
-            let walletData = { balance: 10000, tokenBalances: {}, tokens: [], userId };
-            if (walletSnap.exists()) {
-                walletData = walletSnap.data();
-                console.log('Wallet data:', walletData);
-            } else {
-                console.log('No wallet found, using default');
+            const token = localStorage.getItem('zkPumpToken');
+            const response = await fetch(`http://localhost:3000/wallets/${userId}/add-prove`, {
+                method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+            });
+            const updatedWallet = await response.json();
+            if (!response.ok) {
+                throw new Error(updatedWallet.error || 'Failed to add PROVE');
             }
-            const newBalance = (walletData.balance || 10000) + 100;
-            console.log('New balance:', newBalance);
-
-            console.log('Saving wallet to Firestore');
-            await setDoc(walletRef, {
-                balance: newBalance,
-                tokenBalances: walletData.tokenBalances || {},
-                tokens: walletData.tokens || [],
-                userId,
-            }, { merge: true });
-            console.log('Wallet saved successfully');
 
             if (typeof setWallet === 'function') {
-                console.log('Updating local wallet state');
-                setWallet((prev) => ({
-                    ...prev,
-                    balance: newBalance,
-                    tokenBalances: walletData.tokenBalances || {},
-                    tokens: walletData.tokens || [],
-                }));
-            } else {
-                console.warn('setWallet is not a function, skipping local update');
+                setWallet(updatedWallet);
             }
             setMessage('Added 100 PROVE!');
             setTimeout(() => setMessage(''), 2000);
-            setTimeout(() => setIsClickAllowed(true), 1000); // Re-enable clicking after 1 second
+            setTimeout(() => setIsClickAllowed(true), 1000);
         } catch (err) {
-            console.error('Clicker error:', err.message, err);
+            console.error('Clicker error:', err);
             setError('Failed to add PROVE');
             setMessage('');
-            setIsClickAllowed(true); // Re-enable clicking if there's an error
+            setIsClickAllowed(true);
         }
     };
 

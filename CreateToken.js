@@ -1,8 +1,3 @@
-import { doc, setDoc } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
-import { getAuth } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
-import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js';
-import { db } from './firebase-config.js';
-
 function CreateToken({ user, wallet, setWallet, setError, setView, setShowWidget }) {
     const [name, setName] = React.useState('');
     const [symbol, setSymbol] = React.useState('');
@@ -52,7 +47,7 @@ function CreateToken({ user, wallet, setWallet, setError, setView, setShowWidget
         e.preventDefault();
 
         const currentTime = Date.now();
-        const cooldownMs = 30 * 60 * 1000; // 30 minutes in milliseconds
+        const cooldownMs = 30 * 60 * 1000;
         if (currentTime - lastTokenCreationTime < cooldownMs) {
             const remainingSeconds = Math.ceil((cooldownMs - (currentTime - lastTokenCreationTime)) / 1000);
             setCooldownMessage(`Please wait ${Math.floor(remainingSeconds / 60)} minutes and ${remainingSeconds % 60} seconds before creating another token`);
@@ -61,78 +56,37 @@ function CreateToken({ user, wallet, setWallet, setError, setView, setShowWidget
 
         if (!validateInputs()) return;
 
-        const auth = getAuth();
-        const currentUser = auth.currentUser;
-
-        if (!currentUser) {
+        const token = localStorage.getItem('zkPumpToken');
+        if (!token) {
             setError('User not authenticated');
             return;
         }
 
-        const tokenId = `${currentUser.uid}-${symbol.trim()}-${Date.now()}`;
-        let imageUrl = 'https://placehold.co/200x200/FF69B4/FFF?text=' + symbol.trim().toUpperCase();
-
-        if (image) {
-            try {
-                const storage = getStorage();
-                const storageRef = ref(storage, `tokens/${tokenId}/${image.name}`);
-                const metadata = {
-                    cacheControl: 'public,max-age=86400',
-                };
-                await uploadBytes(storageRef, image, metadata);
-                imageUrl = await getDownloadURL(storageRef);
-            } catch (err) {
-                setError(`Failed to upload image: ${err.message}`);
-                console.error('Image upload error:', err);
-                return;
-            }
-        }
-
-        const newToken = {
-            id: tokenId,
-            name: name.trim(),
-            symbol: symbol.trim().toUpperCase(),
-            about: description.trim(),
-            totalSupply: 100_000_000,
-            currentPrice: 0.01,
-            tokensSold: 0,
-            volume: 0,
-            creatorId: currentUser.uid,
-            creatorNickname: user.nickname || 'Unknown',
-            image: imageUrl,
-            createdAt: new Date().toISOString(),
-            priceHistory: [],
-            transactions: [],
-            isPublic: true,
-        };
-
         try {
-            await setDoc(doc(db, 'tokens', tokenId), newToken);
-
-            const initialPool = {
-                usd: newToken.currentPrice * 2_000_000,
-                tokens: 2_000_000,
-                k: newToken.currentPrice * 2_000_000 * 2_000_000,
-            };
-            const initialCandles = {};
-            for (const tf of ['1s', '1m', '5m', '15m', '1h']) {
-                initialCandles[tf] = {};
+            const formData = new FormData();
+            formData.append('name', name.trim());
+            formData.append('symbol', symbol.trim().toUpperCase());
+            formData.append('description', description.trim());
+            if (image) {
+                formData.append('image', image);
             }
-            await setDoc(
-                doc(db, 'tradingStates', tokenId),
-                {
-                    pool: initialPool,
-                    transactions: [],
-                    candles: initialCandles,
-                },
-                { merge: true }
-            );
+
+            const response = await fetch('http://localhost:3000/tokens', {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${token}` },
+                body: formData,
+            });
+            const newToken = await response.json();
+
+            if (!response.ok) {
+                throw new Error(newToken.error || 'Failed to create token');
+            }
 
             setWallet({
                 ...wallet,
                 tokenBalances: {
                     ...wallet.tokenBalances,
-                    [tokenId]: 0,
+                    [newToken.id]: 0,
                 },
             });
 
@@ -167,7 +121,7 @@ function CreateToken({ user, wallet, setWallet, setError, setView, setShowWidget
         { className: 'create-token-wrapper' },
         React.createElement(
             'div',
-            { className: 'create-token-container', style: { position: 'relative' } }, // Додано position: relative
+            { className: 'create-token-container', style: { position: 'relative' } },
             React.createElement('h2', { className: 'neon-title' }, 'Create New Token'),
             React.createElement(
                 'form',
@@ -214,8 +168,8 @@ function CreateToken({ user, wallet, setWallet, setError, setView, setShowWidget
                         style: {
                             fontFamily: 'Exo 2, sans-serif',
                             marginTop: '8px',
-                            position: 'absolute', // Абсолютне позиціонування
-                            bottom: '-30px', // Зміщення під форму
+                            position: 'absolute',
+                            bottom: '-30px',
                             left: '50%',
                             transform: 'translateX(-50%)',
                             width: '100%',

@@ -1,7 +1,3 @@
-import { collection, query, where, getDocs } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
-import { getAuth } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
-import { db } from './firebase-config.js';
-
 function MyTokens({ user, wallet, setSelectedTokenId, setView }) {
     const [tokens, setTokens] = React.useState([]);
     const [error, setError] = React.useState(null);
@@ -14,10 +10,8 @@ function MyTokens({ user, wallet, setSelectedTokenId, setView }) {
     React.useEffect(() => {
         const fetchTokens = async () => {
             try {
-                const auth = getAuth();
-                const currentUser = auth.currentUser;
-
-                if (!currentUser) {
+                const token = localStorage.getItem('zkPumpToken');
+                if (!token) {
                     setError('User not authenticated');
                     return;
                 }
@@ -27,14 +21,14 @@ function MyTokens({ user, wallet, setSelectedTokenId, setView }) {
                     return;
                 }
 
-                const q = query(
-                    collection(db, 'tokens'),
-                    where('creatorId', '==', currentUser.uid)
-                );
-                const querySnapshot = await getDocs(q);
-                const userTokens = querySnapshot.docs.map(doc => doc.data());
+                const response = await fetch('http://localhost:3000/tokens/my', {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                const userTokens = await response.json();
+                if (!response.ok) {
+                    throw new Error(userTokens.error || 'Failed to load tokens');
+                }
 
-                // Filter tokens with balance > 0 and sort by balance in descending order
                 const filteredAndSortedTokens = userTokens
                     .filter(token => wallet.tokenBalances[token.id] > 0)
                     .sort((a, b) => wallet.tokenBalances[b.id] - wallet.tokenBalances[a.id]);
