@@ -163,13 +163,6 @@ process.on('unhandledRejection', (reason, promise) => {
 
 // Додаємо обробку помилок для Supabase
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
-supabase.on('error', (error) => {
-    console.error('\n=== Supabase Error ===');
-    console.error('Time:', new Date().toISOString());
-    console.error('Error:', error);
-    console.error('Stack:', error.stack);
-    console.error('========================\n');
-});
 
 // Додаємо обробку помилок для Socket.IO
 io.on('error', (error) => {
