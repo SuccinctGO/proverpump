@@ -21,16 +21,22 @@ const corsOptions = {
   origin: 'https://proverpump.vercel.app',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'Accept', 'X-Requested-With'],
-  credentials: true
+  credentials: true,
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 };
 
 app.use(cors(corsOptions));
+
+// Додаємо middleware для обробки OPTIONS запитів
+app.options('*', cors(corsOptions));
 
 // Socket.IO configuration with CORS
 const io = new Server(server, {
   cors: corsOptions,
   transports: ['websocket', 'polling'],
-  allowEIO3: true
+  allowEIO3: true,
+  path: '/socket.io/'
 });
 
 // Додаємо middleware для логування всіх запитів

@@ -19,10 +19,10 @@ function Auth({ onAuth }) {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'Origin': 'https://proverpump.vercel.app'
+                    'Accept': 'application/json'
                 },
                 credentials: 'include',
+                mode: 'cors',
                 body: JSON.stringify({
                     username,
                     password

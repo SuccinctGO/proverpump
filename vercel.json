@@ -12,7 +12,7 @@
   ],
   "routes": [
     {
-      "src": "/socket.io/(.*)",
+      "src": "/users/(.*)",
       "dest": "server/index.js",
       "headers": {
         "Access-Control-Allow-Origin": "https://proverpump.vercel.app",
@@ -22,7 +22,17 @@
       }
     },
     {
-      "src": "/api/(.*)",
+      "src": "/tokens/(.*)",
+      "dest": "server/index.js",
+      "headers": {
+        "Access-Control-Allow-Origin": "https://proverpump.vercel.app",
+        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization, Origin, Accept, X-Requested-With",
+        "Access-Control-Allow-Credentials": "true"
+      }
+    },
+    {
+      "src": "/socket.io/(.*)",
       "dest": "server/index.js",
       "headers": {
         "Access-Control-Allow-Origin": "https://proverpump.vercel.app",
