@@ -33,6 +33,7 @@
     }
   ],
   "env": {
-    "NODE_ENV": "production"
+    "NODE_ENV": "production",
+    "SUPABASE_URL": "https://fzvpbsoybaecxoltiqjf.supabase.co"
   }
 } 
