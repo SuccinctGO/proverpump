@@ -18,33 +18,43 @@ const server = http.createServer(app);
 
 // CORS configuration
 const corsOptions = {
-  origin: 'https://proverpump.vercel.app',
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'Accept', 'X-Requested-With'],
-  credentials: true,
-  preflightContinue: false,
-  optionsSuccessStatus: 204
+    origin: 'https://proverpump.vercel.app',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'Accept', 'X-Requested-With'],
+    credentials: true,
+    preflightContinue: false,
+    optionsSuccessStatus: 204
 };
-
-app.use(cors(corsOptions));
 
 // Додаємо middleware для обробки OPTIONS запитів
 app.options('*', cors(corsOptions));
 
+// Додаємо CORS middleware для всіх запитів
+app.use(cors(corsOptions));
+
 // Socket.IO configuration with CORS
 const io = new Server(server, {
-  cors: corsOptions,
-  transports: ['websocket', 'polling'],
-  allowEIO3: true,
-  path: '/socket.io/'
+    cors: {
+        origin: 'https://proverpump.vercel.app',
+        methods: ['GET', 'POST'],
+        credentials: true
+    },
+    transports: ['websocket', 'polling'],
+    allowEIO3: true,
+    path: '/socket.io/'
 });
 
 // Додаємо middleware для логування всіх запитів
 app.use((req, res, next) => {
-    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
-    console.log('Request headers:', req.headers);
-    console.log('Request body:', req.body);
-    console.log('Request origin:', req.headers.origin);
+    console.log('\n=== Incoming Request ===');
+    console.log('Time:', new Date().toISOString());
+    console.log('Method:', req.method);
+    console.log('Path:', req.path);
+    console.log('Headers:', JSON.stringify(req.headers, null, 2));
+    console.log('Body:', JSON.stringify(req.body, null, 2));
+    console.log('Query:', JSON.stringify(req.query, null, 2));
+    console.log('Origin:', req.headers.origin);
+    console.log('======================\n');
     next();
 });
 
@@ -64,15 +74,15 @@ io.on('connection', (socket) => {
     });
 });
 
-// Додаємо логування для помилок
+// Додаємо middleware для обробки помилок
 app.use((err, req, res, next) => {
-    console.error('Global error handler:');
+    console.error('\n=== Error ===');
+    console.error('Time:', new Date().toISOString());
+    console.error('Path:', req.path);
     console.error('Error:', err);
-    console.error('Request URL:', req.url);
-    console.error('Request method:', req.method);
-    console.error('Request headers:', req.headers);
-    console.error('Request body:', req.body);
-    res.status(500).json({ error: 'Internal Server Error', details: err.message });
+    console.error('Stack:', err.stack);
+    console.error('================\n');
+    res.status(500).json({ error: err.message });
 });
 
 const upload = multer({ storage: multer.memoryStorage() });

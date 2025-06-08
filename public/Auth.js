@@ -24,7 +24,8 @@ function Auth({ onAuth }) {
             console.log('Sending request to:', `${SERVER_URL}/users/${isLogin ? 'login' : 'register'}`);
             console.log('Request headers:', {
                 'Content-Type': 'application/json',
-                'Accept': 'application/json'
+                'Accept': 'application/json',
+                'Origin': window.location.origin
             });
             console.log('Request credentials:', 'include');
             console.log('Request mode:', 'cors');
@@ -33,7 +34,8 @@ function Auth({ onAuth }) {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json'
+                    'Accept': 'application/json',
+                    'Origin': window.location.origin
                 },
                 credentials: 'include',
                 mode: 'cors',
