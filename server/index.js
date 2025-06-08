@@ -90,27 +90,71 @@ const upload = multer({ storage: multer.memoryStorage() });
 app.use(express.json());
 
 // Перевірка змінних середовища
+console.log('\n=== Environment Variables Check ===');
 const requiredEnvVars = [
-  'DB_USER',
-  'DB_HOST',
-  'DB_NAME',
-  'DB_PASSWORD',
-  'DB_PORT',
-  'JWT_SECRET',
-  'SUPABASE_URL',
-  'SUPABASE_KEY'
+    'DB_USER',
+    'DB_HOST',
+    'DB_NAME',
+    'DB_PASSWORD',
+    'DB_PORT',
+    'JWT_SECRET',
+    'SUPABASE_URL',
+    'SUPABASE_KEY'
 ];
 
-console.log('Environment variables check:');
+console.log('Checking required environment variables:');
 requiredEnvVars.forEach(varName => {
-  console.log(`${varName}: ${process.env[varName] ? '✓' : '✗'}`);
+    const value = process.env[varName];
+    console.log(`${varName}: ${value ? '✓' : '✗'}`);
+    if (value) {
+        // Маскуємо чутливі дані
+        if (varName.includes('PASSWORD') || varName.includes('SECRET') || varName.includes('KEY')) {
+            console.log(`${varName} value: ${value.substring(0, 4)}...${value.substring(value.length - 4)}`);
+        } else {
+            console.log(`${varName} value: ${value}`);
+        }
+    }
 });
 
 const missingEnvVars = requiredEnvVars.filter(varName => !process.env[varName]);
 if (missingEnvVars.length > 0) {
-  console.error('Missing required environment variables:', missingEnvVars);
-  process.exit(1);
+    console.error('Missing required environment variables:', missingEnvVars);
+    process.exit(1);
 }
+
+// Перевірка підключення до бази даних
+console.log('\n=== Database Connection Check ===');
+console.log('Attempting to connect to database...');
+console.log('DB_HOST:', process.env.DB_HOST);
+console.log('DB_PORT:', process.env.DB_PORT);
+console.log('DB_NAME:', process.env.DB_NAME);
+console.log('DB_USER:', process.env.DB_USER);
+
+// Перевірка Supabase
+console.log('\n=== Supabase Configuration Check ===');
+console.log('SUPABASE_URL:', process.env.SUPABASE_URL);
+console.log('SUPABASE_KEY:', process.env.SUPABASE_KEY ? '✓' : '✗');
+
+// Перевірка JWT
+console.log('\n=== JWT Configuration Check ===');
+console.log('JWT_SECRET:', process.env.JWT_SECRET ? '✓' : '✗');
+
+// Додаємо обробку необроблених помилок
+process.on('uncaughtException', (error) => {
+    console.error('\n=== Uncaught Exception ===');
+    console.error('Time:', new Date().toISOString());
+    console.error('Error:', error);
+    console.error('Stack:', error.stack);
+    console.error('========================\n');
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('\n=== Unhandled Rejection ===');
+    console.error('Time:', new Date().toISOString());
+    console.error('Reason:', reason);
+    console.error('Promise:', promise);
+    console.error('========================\n');
+});
 
 // Налаштування підключення до бази даних
 const pool = new Pool({
