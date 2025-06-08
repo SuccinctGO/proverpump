@@ -5,13 +5,17 @@ import NavBar from './NavBar.js';
 import Dashboard from './Dashboard.js';
 import MyTokens from './MyTokens.js';
 import TokenCreationWidget from './widget1.js';
+
+// Імпортуємо React з глобального об'єкта
 const React = window.React;
 const io = window.io;
 
+// Конфігурація сервера
 const SERVER_URL = window.location.hostname === 'proverpump.vercel.app' 
-  ? 'https://proverpump-server.vercel.app'
-  : 'https://proverpump-server-ewqtdbfip-istzzzs-projects.vercel.app';
+    ? 'https://proverpump-server.vercel.app'
+    : 'https://proverpump-server-ewqtdbfip-istzzzs-projects.vercel.app';
 
+// Функція для очікування завантаження bip39
 const waitForBip39 = () => {
     return new Promise((resolve) => {
         const maxAttempts = 50;
@@ -30,6 +34,7 @@ const waitForBip39 = () => {
     });
 };
 
+// Функція для генерації мнемонічної фрази
 const generateFallbackMnemonic = () => {
     const words = [
         'apple', 'banana', 'cat', 'dog', 'elephant', 'fish', 'grape', 'horse',
@@ -43,6 +48,7 @@ const generateFallbackMnemonic = () => {
     return mnemonic.trim();
 };
 
+// Головний компонент додатку
 function App() {
     const [user, setUser] = React.useState(null);
     const [wallet, setWallet] = React.useState(null);
@@ -81,56 +87,30 @@ function App() {
         }
 
         // Завантаження токенів
-        const fetchWithCredentials = async (url, options = {}) => {
-            console.log('Making request to:', url);
-            console.log('Request options:', options);
-            
-            const defaultOptions = {
-                credentials: 'include',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'Origin': 'https://proverpump.vercel.app'
-                }
-            };
-
-            try {
-                const response = await fetch(url, { ...defaultOptions, ...options });
-                console.log('Response status:', response.status);
-                console.log('Response headers:', Object.fromEntries(response.headers.entries()));
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response;
-            } catch (error) {
-                console.error('Fetch error:', error);
-                throw error;
-            }
-        };
-
         const fetchTokens = async () => {
             try {
-                const response = await fetchWithCredentials(`${SERVER_URL}/tokens`);
+                const response = await fetch(`${SERVER_URL}/tokens`, {
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'Origin': window.location.origin
+                    }
+                });
+                
                 if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.error || 'Failed to fetch tokens');
+                    throw new Error('Failed to fetch tokens');
                 }
-                return await response.json();
+                
+                const data = await response.json();
+                setTokens(data || []);
             } catch (error) {
                 console.error('Token fetch error:', error);
-                return [];
+                setError('Failed to load tokens');
             }
         };
 
-        fetchTokens()
-            .then((data) => {
-                setTokens(data || []);
-            })
-            .catch((err) => {
-                setError('Failed to load tokens');
-                console.error('Token fetch error:', err);
-            });
+        fetchTokens();
 
         // WebSocket для оновлення токенів
         const socket = io(SERVER_URL, {
@@ -138,31 +118,24 @@ function App() {
             transports: ['websocket', 'polling'],
             reconnection: true,
             reconnectionAttempts: 5,
-            reconnectionDelay: 1000,
-            extraHeaders: {
-                'Origin': window.location.origin
-            }
+            reconnectionDelay: 1000
         });
+
         socket.on('connect', () => {
             console.log('Socket connected successfully');
-            console.log('Socket ID:', socket.id);
-            console.log('Socket transport:', socket.io.engine.transport.name);
             socket.emit('subscribeTokens');
         });
+
         socket.on('newToken', (newToken) => {
             setTokens((prev) => [...prev, newToken]);
         });
+
         socket.on('disconnect', (reason) => {
             console.log('Socket disconnected:', reason);
-            console.log('Socket connection state:', socket.connected);
         });
+
         socket.on('connect_error', (error) => {
             console.error('Socket connection error:', error);
-            console.log('Socket connection state:', socket.connected);
-            console.log('Socket transport:', socket.io.engine.transport.name);
-        });
-        socket.on('error', (error) => {
-            console.error('Socket error:', error);
         });
 
         return () => {
@@ -170,6 +143,7 @@ function App() {
         };
     }, []);
 
+    // Рендеринг компонента
     return React.createElement(
         'div',
         { className: 'container mx-auto p-4' },
@@ -246,4 +220,5 @@ function App() {
     );
 }
 
+// Експортуємо компонент
 export default App;

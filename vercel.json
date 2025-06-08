@@ -12,85 +12,39 @@
   ],
   "routes": [
     {
-      "src": "/tokens",
-      "dest": "server/index.js",
-      "headers": {
-        "Access-Control-Allow-Origin": "https://proverpump.vercel.app",
-        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization, Origin, Accept, X-Requested-With",
-        "Access-Control-Allow-Credentials": "true"
-      }
-    },
-    {
-      "src": "/users/register",
-      "dest": "server/index.js",
-      "headers": {
-        "Access-Control-Allow-Origin": "https://proverpump.vercel.app",
-        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization, Origin, Accept, X-Requested-With",
-        "Access-Control-Allow-Credentials": "true"
-      }
-    },
-    {
-      "src": "/socket.io/(.*)",
-      "dest": "server/index.js",
-      "headers": {
-        "Access-Control-Allow-Origin": "https://proverpump.vercel.app",
-        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization, Origin, Accept, X-Requested-With",
-        "Access-Control-Allow-Credentials": "true"
-      }
-    },
-    {
-      "src": "/users/(.*)",
-      "dest": "server/index.js",
-      "headers": {
-        "Access-Control-Allow-Origin": "https://proverpump.vercel.app",
-        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization, Origin, Accept, X-Requested-With",
-        "Access-Control-Allow-Credentials": "true"
-      }
-    },
-    {
-      "src": "/tokens/(.*)",
-      "dest": "server/index.js",
-      "headers": {
-        "Access-Control-Allow-Origin": "https://proverpump.vercel.app",
-        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization, Origin, Accept, X-Requested-With",
-        "Access-Control-Allow-Credentials": "true"
-      }
-    },
-    {
       "src": "/api/(.*)",
-      "dest": "server/index.js",
-      "headers": {
-        "Access-Control-Allow-Origin": "https://proverpump.vercel.app",
-        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization, Origin, Accept, X-Requested-With",
-        "Access-Control-Allow-Credentials": "true"
-      }
+      "dest": "server/index.js"
     },
     {
-      "src": "/(.*\\..*)",
+      "src": "/(.*\\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot))",
       "dest": "/public/$1"
     },
     {
-      "src": "/",
-      "dest": "/public/index.html"
-    },
-    {
       "src": "/(.*)",
-      "dest": "server/index.js",
-      "headers": {
-        "Access-Control-Allow-Origin": "https://proverpump.vercel.app",
-        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization, Origin, Accept, X-Requested-With",
-        "Access-Control-Allow-Credentials": "true"
-      }
+      "dest": "/public/index.html"
     }
   ],
-  "env": {
-    "NODE_ENV": "production"
-  }
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, PUT, DELETE, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "Content-Type, Authorization, Origin, Accept, X-Requested-With"
+        },
+        {
+          "key": "Access-Control-Allow-Credentials",
+          "value": "true"
+        }
+      ]
+    }
+  ]
 } 

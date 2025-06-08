@@ -35,6 +35,13 @@
                 ReactDOM.render(React.createElement(App), document.getElementById('root'));
             } catch (err) {
                 console.error('index.html: Failed to load test.js:', err);
+                document.getElementById('root').innerHTML = `
+                    <div style="color: red; padding: 20px; text-align: center;">
+                        <h2>Error loading application</h2>
+                        <p>${err.message}</p>
+                        <p>Please try refreshing the page</p>
+                    </div>
+                `;
             }
         };
 
