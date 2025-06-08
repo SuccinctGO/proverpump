@@ -1,11 +1,12 @@
 {
   "name": "proverpump",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "ProverPump Application",
   "main": "server/index.js",
   "scripts": {
     "start": "node server/index.js",
-    "dev": "nodemon server/index.js"
+    "dev": "nodemon server/index.js",
+    "deploy": "git add . && git commit -m \"Update version\" && git push origin main"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.3",
