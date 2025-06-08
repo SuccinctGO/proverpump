@@ -234,7 +234,7 @@ function Auth({ onAuth }) {
                     React.createElement('button', {
                         type: 'submit',
                         className: 'zkpump-auth-submit-button',
-                        disabled: isLogin ? false : true
+                        disabled: false
                     }, isLogin ? 'Login' : 'Register'),
                     React.createElement('div', { className: 'zkpump-text-center' },
                         React.createElement('button', {

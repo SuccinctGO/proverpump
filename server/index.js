@@ -153,7 +153,9 @@ const supabase = createClient(
 // Реєстрація користувача
 app.post('/users/register', async (req, res) => {
     console.log('Registration request received');
+    console.log('Request headers:', req.headers);
     console.log('Request body:', req.body);
+    console.log('Request origin:', req.headers.origin);
     
     try {
         const { username, password } = req.body;
@@ -170,6 +172,8 @@ app.post('/users/register', async (req, res) => {
             .eq('username', username)
             .single();
 
+        console.log('Existing user check result:', { existingUser, checkError });
+
         if (checkError && checkError.code !== 'PGRST116') {
             console.error('Error checking existing user:', checkError);
             throw checkError;
@@ -183,7 +187,7 @@ app.post('/users/register', async (req, res) => {
         const userId = uuidv4();
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        console.log('Creating new user:', username);
+        console.log('Creating new user:', { username, userId });
         const { data: user, error: userError } = await supabase
             .from('users')
             .insert([
@@ -195,6 +199,8 @@ app.post('/users/register', async (req, res) => {
             ])
             .select()
             .single();
+
+        console.log('User creation result:', { user, userError });
 
         if (userError) {
             console.error('Error creating user:', userError);
@@ -214,6 +220,8 @@ app.post('/users/register', async (req, res) => {
             ])
             .select()
             .single();
+
+        console.log('Wallet creation result:', { wallet, walletError });
 
         if (walletError) {
             console.error('Error creating wallet:', walletError);
