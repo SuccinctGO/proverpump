@@ -18,7 +18,7 @@ const server = http.createServer(app);
 
 // CORS configuration
 const corsOptions = {
-    origin: 'https://proverpump.vercel.app',
+    origin: ['https://proverpump.vercel.app', 'https://proverpump-server-ewqtdbfip-istzzzs-projects.vercel.app'],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'Accept', 'X-Requested-With'],
     credentials: true,
@@ -35,7 +35,7 @@ app.use(cors(corsOptions));
 // Socket.IO configuration with CORS
 const io = new Server(server, {
     cors: {
-        origin: 'https://proverpump.vercel.app',
+        origin: ['https://proverpump.vercel.app', 'https://proverpump-server-ewqtdbfip-istzzzs-projects.vercel.app'],
         methods: ['GET', 'POST'],
         credentials: true
     },
@@ -237,8 +237,6 @@ app.post('/users/register', async (req, res) => {
     console.log('Request headers:', JSON.stringify(req.headers, null, 2));
     console.log('Request body:', JSON.stringify(req.body, null, 2));
     console.log('Request origin:', req.headers.origin);
-    console.log('Request method:', req.method);
-    console.log('Request path:', req.path);
     
     try {
         const { username, password } = req.body;
@@ -254,8 +252,6 @@ app.post('/users/register', async (req, res) => {
             .select()
             .eq('username', username)
             .single();
-
-        console.log('Existing user check result:', { existingUser, checkError });
 
         if (checkError && checkError.code !== 'PGRST116') {
             console.error('Error checking existing user:', checkError);
@@ -283,59 +279,28 @@ app.post('/users/register', async (req, res) => {
             .select()
             .single();
 
-        console.log('User creation result:', { user, userError });
-
         if (userError) {
             console.error('Error creating user:', userError);
             throw userError;
         }
 
-        console.log('Creating wallet for user:', userId);
-        const { data: wallet, error: walletError } = await supabase
-            .from('wallets')
-            .insert([
-                {
-                    userId,
-                    balance: 1000,
-                    tokenBalances: {},
-                    tokens: []
-                }
-            ])
-            .select()
-            .single();
-
-        console.log('Wallet creation result:', { wallet, walletError });
-
-        if (walletError) {
-            console.error('Error creating wallet:', walletError);
-            throw walletError;
-        }
-
-        const token = jwt.sign(
-            { userId },
-            process.env.JWT_SECRET,
-            { expiresIn: '7d' }
-        );
-
-        console.log('Registration successful for user:', username);
-        console.log('=== End Registration Request ===');
-        res.json({
-            token,
-            user: {
-                id: userId,
-                username: username
-            },
-            wallet
-        });
+        const token = jwt.sign({ userId, username }, process.env.JWT_SECRET, { expiresIn: '24h' });
+        
+        console.log('User created successfully:', { username, userId });
+        res.json({ token, user: { userId, username } });
     } catch (error) {
         console.error('Registration error:', error);
-        console.log('=== End Registration Request with Error ===');
-        res.status(500).json({ error: 'Registration failed: ' + error.message });
+        res.status(500).json({ error: 'Registration failed' });
     }
 });
 
 // Логін користувача
 app.post('/users/login', async (req, res) => {
+    console.log('=== Login Request ===');
+    console.log('Time:', new Date().toISOString());
+    console.log('Request headers:', JSON.stringify(req.headers, null, 2));
+    console.log('Request body:', JSON.stringify(req.body, null, 2));
+    
     try {
         const { username, password } = req.body;
 
@@ -343,103 +308,29 @@ app.post('/users/login', async (req, res) => {
             return res.status(400).json({ error: 'Username and password are required' });
         }
 
-        // Знаходимо користувача
-        const userResult = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
-        if (userResult.rows.length === 0) {
-            return res.status(401).json({ error: 'Invalid credentials' });
+        const { data: user, error: userError } = await supabase
+            .from('users')
+            .select()
+            .eq('username', username)
+            .single();
+
+        if (userError || !user) {
+            return res.status(401).json({ error: 'Invalid username or password' });
         }
 
-        const user = userResult.rows[0];
-        const walletResult = await pool.query('SELECT * FROM wallets WHERE userId = $1', [user.userId]);
-        if (walletResult.rows.length === 0) {
-            return res.status(404).json({ error: 'Wallet not found' });
-        }
-
-        const wallet = walletResult.rows[0];
-
-        // Перевіряємо пароль
         const validPassword = await bcrypt.compare(password, user.password);
         if (!validPassword) {
-            return res.status(401).json({ error: 'Invalid credentials' });
+            return res.status(401).json({ error: 'Invalid username or password' });
         }
 
-        // Генеруємо JWT токен
-        const token = jwt.sign(
-            { userId: user.userId },
-            process.env.JWT_SECRET,
-            { expiresIn: '7d' }
-        );
-
-        res.json({
-            token,
-            user: {
-                id: user.userId,
-                username: user.username
-            },
-            wallet
-        });
+        const token = jwt.sign({ userId: user.userId, username: user.username }, process.env.JWT_SECRET, { expiresIn: '24h' });
+        
+        console.log('Login successful:', { username: user.username });
+        res.json({ token, user: { userId: user.userId, username: user.username } });
     } catch (error) {
         console.error('Login error:', error);
         res.status(500).json({ error: 'Login failed' });
     }
-});
-
-// Discord OAuth2
-app.get('/users/discord', async (req, res) => {
-  const redirectUri = process.env.DISCORD_REDIRECT_URI;
-  const clientId = process.env.DISCORD_CLIENT_ID;
-  const scope = 'identify';
-  const discordAuthUrl = `https://discord.com/api/oauth2/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${scope}`;
-  res.redirect(discordAuthUrl);
-});
-
-app.get('/users/discord/callback', async (req, res) => {
-  const { code } = req.query;
-  if (!code) {
-    return res.status(400).json({ error: 'No code provided' });
-  }
-
-  try {
-    const tokenResponse = await axios.post('https://discord.com/api/oauth2/token', new URLSearchParams({
-      client_id: process.env.DISCORD_CLIENT_ID,
-      client_secret: process.env.DISCORD_CLIENT_SECRET,
-      grant_type: 'authorization_code',
-      code,
-      redirect_uri: process.env.DISCORD_REDIRECT_URI,
-    }), {
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    });
-
-    const accessToken = tokenResponse.data.access_token;
-    const userResponse = await axios.get('https://discord.com/api/users/@me', {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    });
-
-    const discordUser = userResponse.data;
-    const nickname = discordUser.username;
-    let userId;
-
-    const userResult = await pool.query('SELECT * FROM users WHERE nickname = $1', [nickname]);
-    if (userResult.rows.length > 0) {
-      userId = userResult.rows[0].userId;
-    } else {
-      userId = uuidv4();
-      await pool.query('INSERT INTO users (userId, nickname) VALUES ($1, $2)', [userId, nickname]);
-      await pool.query(
-        'INSERT INTO wallets (userId, balance, tokenBalances, tokens) VALUES ($1, $2, $3, $4)',
-        [userId, 10000, '{}', '[]']
-      );
-    }
-
-    const walletResult = await pool.query('SELECT * FROM wallets WHERE userId = $1', [userId]);
-    const wallet = walletResult.rows[0];
-    const token = jwt.sign({ userId, nickname }, process.env.JWT_SECRET, { expiresIn: '1h' });
-
-    res.redirect(`${process.env.FRONTEND_URL}?token=${token}`);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Failed to authenticate with Discord' });
-  }
 });
 
 // Отримання даних користувача

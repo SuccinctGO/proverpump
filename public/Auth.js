@@ -19,24 +19,22 @@ function Auth({ onAuth }) {
         console.log('Username:', username);
         console.log('Password length:', password.length);
         console.log('Server URL:', SERVER_URL);
+        console.log('Current origin:', window.location.origin);
 
         try {
-            console.log('Sending request to:', `${SERVER_URL}/users/${isLogin ? 'login' : 'register'}`);
-            console.log('Request headers:', {
+            const requestUrl = `${SERVER_URL}/users/${isLogin ? 'login' : 'register'}`;
+            console.log('Sending request to:', requestUrl);
+            
+            const requestHeaders = {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
                 'Origin': window.location.origin
-            });
-            console.log('Request credentials:', 'include');
-            console.log('Request mode:', 'cors');
+            };
+            console.log('Request headers:', requestHeaders);
 
-            const response = await fetch(`${SERVER_URL}/users/${isLogin ? 'login' : 'register'}`, {
+            const response = await fetch(requestUrl, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'Origin': window.location.origin
-                },
+                headers: requestHeaders,
                 credentials: 'include',
                 mode: 'cors',
                 body: JSON.stringify({
@@ -49,9 +47,16 @@ function Auth({ onAuth }) {
             console.log('Response headers:', Object.fromEntries(response.headers.entries()));
 
             if (!response.ok) {
-                const data = await response.json();
-                console.error('Error response:', data);
-                throw new Error(data.error || 'Authentication failed');
+                let errorMessage;
+                try {
+                    const data = await response.json();
+                    console.error('Error response:', data);
+                    errorMessage = data.error || 'Authentication failed';
+                } catch (parseError) {
+                    console.error('Failed to parse error response:', parseError);
+                    errorMessage = `Server error: ${response.status}`;
+                }
+                throw new Error(errorMessage);
             }
 
             const data = await response.json();
@@ -66,215 +71,105 @@ function Auth({ onAuth }) {
                 stack: err.stack
             });
             console.log('=== End Auth Request with Error ===\n');
-            setError(err.message);
+            setError(err.message || 'An unexpected error occurred');
         }
     };
 
-    const styles = `
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Exo+2:wght@400;600&display=swap');
-
-        .zkpump-auth-wrapper * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        .zkpump-auth-wrapper {
-            all: initial;
-            isolation: isolate;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background: #000;
-            font-family: 'Exo 2', sans-serif;
-            color: #fff;
-        }
-
-        .zkpump-auth-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            width: 100%;
-        }
-
-        .zkpump-section-container {
-            background: #000;
-            padding: 15px;
-            border: none;
-            border-radius: 16px;
-        }
-
-        .zkpump-auth-form {
-            width: 100%;
-            max-width: 300px;
-            margin: 0 auto;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            align-items: center;
-        }
-
-        .zkpump-neon-title {
-            font-family: 'Orbitron', sans-serif;
-            font-weight: 700;
-            color: #ffb6c1;
-            font-size: 32px;
-            text-shadow: 0 0 10px rgba(255, 105, 180, 0.7);
-            text-align: center;
-            margin-bottom: 25px;
-        }
-
-        .zkpump-auth-input {
-            width: 100%;
-            max-width: 300px;
-            padding: 10px;
-            background: rgba(255, 105, 180, 0.1);
-            border: 2px solid #ff69b4;
-            border-radius: 16px;
-            color: #fff;
-            font-family: 'Exo 2', sans-serif;
-            font-size: 14px;
-            height: 40px;
-            outline: none;
-            transition: border-color 0.3s ease;
-        }
-
-        .zkpump-auth-input::placeholder {
-            color: #ffb6c1;
-            opacity: 0.7;
-        }
-
-        .zkpump-auth-input:focus {
-            border-color: #ff00ff;
-        }
-
-        .zkpump-auth-submit-button {
-            width: 100%;
-            max-width: 300px;
-            background: linear-gradient(45deg, #ff00ff, #ff69b4);
-            border: none;
-            border-radius: 16px;
-            color: #fff;
-            font-family: 'Orbitron', sans-serif;
-            font-size: 16px;
-            font-weight: 600;
-            padding: 10px;
-            cursor: pointer;
-            transition: background 0.3s ease, transform 0.3s ease;
-            opacity: ${isLogin ? 0.7 : 1};
-            pointer-events: ${isLogin ? 'none' : 'auto'};
-        }
-
-        .zkpump-auth-submit-button:hover {
-            background: linear-gradient(45deg, #e600e6, #ff4d94);
-            transform: scale(1.05);
-        }
-
-        .zkpump-simple-pink-button {
-            background: none;
-            border: none;
-            padding: 0;
-            font-family: 'Exo 2', sans-serif;
-            font-size: 14px;
-            color: #ff69b4;
-            cursor: pointer;
-            text-decoration: underline;
-            transition: color 0.3s ease;
-        }
-
-        .zkpump-simple-pink-button:hover {
-            color: #ffb6c1;
-        }
-
-        .zkpump-error {
-            font-family: 'Exo 2', sans-serif;
-            color: #ff5555;
-            font-size: 14px;
-            margin: 5px 0;
-            text-align: center;
-        }
-
-        .zkpump-text-center {
-            font-family: 'Exo 2', sans-serif;
-            color: #fff;
-            font-size: 14px;
-            margin: 5px 0;
-            text-align: center;
-        }
-
-        @media (max-width: 640px) {
-            .zkpump-auth-form {
-                max-width: 100%;
-                padding: 0 15px;
-            }
-
-            .zkpump-neon-title {
-                font-size: 24px;
-            }
-
-            .zkpump-auth-input {
-                max-width: 100%;
-            }
-
-            .zkpump-auth-submit-button {
-                max-width: 100%;
-            }
-        }
-    `;
-
-    return React.createElement(
-        'div',
-        { className: 'zkpump-auth-wrapper' },
-        React.createElement(
-            'style',
-            null,
-            styles
-        ),
-        React.createElement(
-            'div',
-            { className: 'zkpump-auth-container' },
-            React.createElement(
-                'div',
-                { className: 'zkpump-section-container' },
-                React.createElement(
-                    'form',
-                    { className: 'zkpump-auth-form', onSubmit: handleSubmit },
-                    React.createElement('h1', { className: 'zkpump-neon-title' }, 'ProverPump'),
-                    React.createElement('input', {
-                        type: 'text',
-                        className: 'zkpump-auth-input',
-                        placeholder: 'Enter your username',
-                        value: username,
-                        onChange: (e) => setUsername(e.target.value),
-                        required: true
-                    }),
-                    React.createElement('input', {
-                        type: 'password',
-                        className: 'zkpump-auth-input',
-                        placeholder: 'Enter your password',
-                        value: password,
-                        onChange: (e) => setPassword(e.target.value),
-                        required: true
-                    }),
-                    error && React.createElement('div', { className: 'zkpump-error' }, error),
-                    React.createElement('button', {
-                        type: 'submit',
-                        className: 'zkpump-auth-submit-button',
-                        disabled: false
-                    }, isLogin ? 'Login' : 'Register'),
-                    React.createElement('div', { className: 'zkpump-text-center' },
-                        React.createElement('button', {
-                            type: 'button',
-                            className: 'zkpump-simple-pink-button',
-                            onClick: () => setIsLogin(!isLogin)
-                        }, isLogin ? 'Need an account? Register' : 'Already have an account? Login')
-                    )
-                )
-            )
-        )
+    return (
+        <div className="auth-container">
+            <div className="auth-form">
+                <h2>{isLogin ? 'Login' : 'Register'}</h2>
+                {error && <div className="error">{error}</div>}
+                <form onSubmit={handleSubmit}>
+                    <div>
+                        <input
+                            type="text"
+                            placeholder="Username"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                            required
+                        />
+                    </div>
+                    <div>
+                        <input
+                            type="password"
+                            placeholder="Password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                        />
+                    </div>
+                    <button type="submit">
+                        {isLogin ? 'Login' : 'Register'}
+                    </button>
+                </form>
+                <button
+                    type="button"
+                    onClick={() => setIsLogin(!isLogin)}
+                    className="switch-mode"
+                >
+                    {isLogin ? 'Need an account? Register' : 'Already have an account? Login'}
+                </button>
+            </div>
+        </div>
     );
 }
+
+// Додаємо базові стилі
+const style = document.createElement('style');
+style.textContent = `
+    .auth-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background: #f5f5f5;
+    }
+    .auth-form {
+        background: white;
+        padding: 2rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 400px;
+    }
+    .auth-form h2 {
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+    .auth-form input {
+        width: 100%;
+        padding: 0.5rem;
+        margin-bottom: 1rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+    .auth-form button {
+        width: 100%;
+        padding: 0.75rem;
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    .auth-form button:hover {
+        background: #0056b3;
+    }
+    .error {
+        color: red;
+        margin-bottom: 1rem;
+        text-align: center;
+    }
+    .switch-mode {
+        background: none !important;
+        color: #007bff !important;
+        margin-top: 1rem;
+    }
+    .switch-mode:hover {
+        text-decoration: underline;
+    }
+`;
+document.head.appendChild(style);
 
 export default Auth;
