@@ -13,8 +13,22 @@ function Auth({ onAuth }) {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
+        console.log('\n=== Auth Request ===');
+        console.log('Time:', new Date().toISOString());
+        console.log('Mode:', isLogin ? 'Login' : 'Register');
+        console.log('Username:', username);
+        console.log('Password length:', password.length);
+        console.log('Server URL:', SERVER_URL);
 
         try {
+            console.log('Sending request to:', `${SERVER_URL}/users/${isLogin ? 'login' : 'register'}`);
+            console.log('Request headers:', {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            });
+            console.log('Request credentials:', 'include');
+            console.log('Request mode:', 'cors');
+
             const response = await fetch(`${SERVER_URL}/users/${isLogin ? 'login' : 'register'}`, {
                 method: 'POST',
                 headers: {
@@ -29,15 +43,27 @@ function Auth({ onAuth }) {
                 })
             });
 
+            console.log('Response status:', response.status);
+            console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+
             if (!response.ok) {
                 const data = await response.json();
+                console.error('Error response:', data);
                 throw new Error(data.error || 'Authentication failed');
             }
 
             const data = await response.json();
+            console.log('Success response:', data);
+            console.log('=== End Auth Request ===\n');
             onAuth(data);
         } catch (err) {
             console.error(`${isLogin ? 'Login' : 'Registration'} error:`, err);
+            console.error('Error details:', {
+                name: err.name,
+                message: err.message,
+                stack: err.stack
+            });
+            console.log('=== End Auth Request with Error ===\n');
             setError(err.message);
         }
     };
