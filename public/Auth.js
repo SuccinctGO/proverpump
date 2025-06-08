@@ -1,125 +1,46 @@
 const React = window.React;
 
-function Auth({ setUser, setWallet, setView }) {
+function Auth({ onAuth }) {
     const [isLogin, setIsLogin] = React.useState(true);
-    const [nickname, setNickname] = React.useState('');
+    const [username, setUsername] = React.useState('');
+    const [password, setPassword] = React.useState('');
     const [error, setError] = React.useState('');
-    const [isLoading, setIsLoading] = React.useState(false);
 
     const SERVER_URL = window.location.hostname === 'proverpump.vercel.app' 
         ? 'https://proverpump-server.vercel.app'
         : 'https://proverpump-server-ewqtdbfip-istzzzs-projects.vercel.app';
 
-    const handleRegister = async (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        setIsLoading(true);
-        setError(null);
-
-        if (!nickname || nickname.length < 3) {
-            setError('Nickname must be 3+ characters');
-            setIsLoading(false);
-            return;
-        }
+        setError('');
 
         try {
-            const response = await fetch(`${SERVER_URL}/users/register`, {
+            const response = await fetch(`${SERVER_URL}/users/${isLogin ? 'login' : 'register'}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
-                    'Origin': window.location.origin
+                    'Origin': 'https://proverpump.vercel.app'
                 },
                 credentials: 'include',
-                body: JSON.stringify({ nickname })
+                body: JSON.stringify({
+                    username,
+                    password
+                })
             });
 
             if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error || 'Registration failed');
+                const data = await response.json();
+                throw new Error(data.error || 'Authentication failed');
             }
 
             const data = await response.json();
-            localStorage.setItem('token', data.token);
-            setUser(data.user);
-            setWallet(data.wallet);
-            setView('dashboard');
-        } catch (error) {
-            console.error('Registration error:', error);
-            setError(error.message);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const handleLogin = async (e) => {
-        e.preventDefault();
-        setError('');
-        setIsLoading(true);
-
-        if (!nickname) {
-            setError('Nickname required');
-            setIsLoading(false);
-            return;
-        }
-
-        try {
-            const response = await fetch(`${SERVER_URL}/users/login`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ nickname }),
-            });
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.error || 'Failed to login');
-            }
-
-            localStorage.setItem('zkPumpToken', data.token);
-            setUser(data.user);
-            setWallet(data.wallet);
-            setView('dashboard');
+            onAuth(data);
         } catch (err) {
-            console.error('Login error:', err);
-            setError(`Failed to login: ${err.message}`);
-        } finally {
-            setIsLoading(false);
+            console.error(`${isLogin ? 'Login' : 'Registration'} error:`, err);
+            setError(err.message);
         }
     };
-
-    const handleDiscordLogin = () => {
-        window.location.href = `${SERVER_URL}/users/discord`;
-    };
-
-    React.useEffect(() => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const token = urlParams.get('token');
-        
-        if (token) {
-            setIsLoading(true);
-            localStorage.setItem('zkPumpToken', token);
-            
-            fetch(`${SERVER_URL}/users/me`, {
-                headers: { Authorization: `Bearer ${token}` },
-            })
-                .then((res) => res.json())
-                .then((data) => {
-                    if (data.user && data.wallet) {
-                        setUser(data.user);
-                        setWallet(data.wallet);
-                        setView('dashboard');
-                    } else {
-                        setError('Failed to fetch user data');
-                    }
-                })
-                .catch((err) => {
-                    console.error('Discord login error:', err);
-                    setError(`Failed to login with Discord: ${err.message}`);
-                })
-                .finally(() => {
-                    setIsLoading(false);
-                });
-        }
-    }, [setUser, setWallet, setView]);
 
     const styles = `
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Exo+2:wght@400;600&display=swap');
@@ -214,8 +135,8 @@ function Auth({ setUser, setWallet, setView }) {
             padding: 10px;
             cursor: pointer;
             transition: background 0.3s ease, transform 0.3s ease;
-            opacity: ${isLoading ? 0.7 : 1};
-            pointer-events: ${isLoading ? 'none' : 'auto'};
+            opacity: ${isLogin ? 0.7 : 1};
+            pointer-events: ${isLogin ? 'none' : 'auto'};
         }
 
         .zkpump-auth-submit-button:hover {
@@ -291,21 +212,29 @@ function Auth({ setUser, setWallet, setView }) {
                 { className: 'zkpump-section-container' },
                 React.createElement(
                     'form',
-                    { className: 'zkpump-auth-form', onSubmit: isLogin ? handleLogin : handleRegister },
+                    { className: 'zkpump-auth-form', onSubmit: handleSubmit },
                     React.createElement('h1', { className: 'zkpump-neon-title' }, 'ProverPump'),
                     React.createElement('input', {
                         type: 'text',
                         className: 'zkpump-auth-input',
-                        placeholder: 'Enter your nickname',
-                        value: nickname,
-                        onChange: (e) => setNickname(e.target.value),
-                        disabled: isLoading
+                        placeholder: 'Enter your username',
+                        value: username,
+                        onChange: (e) => setUsername(e.target.value),
+                        required: true
+                    }),
+                    React.createElement('input', {
+                        type: 'password',
+                        className: 'zkpump-auth-input',
+                        placeholder: 'Enter your password',
+                        value: password,
+                        onChange: (e) => setPassword(e.target.value),
+                        required: true
                     }),
                     error && React.createElement('div', { className: 'zkpump-error' }, error),
                     React.createElement('button', {
                         type: 'submit',
                         className: 'zkpump-auth-submit-button',
-                        disabled: isLoading
+                        disabled: isLogin ? false : true
                     }, isLogin ? 'Login' : 'Register'),
                     React.createElement('div', { className: 'zkpump-text-center' },
                         React.createElement('button', {
@@ -313,13 +242,6 @@ function Auth({ setUser, setWallet, setView }) {
                             className: 'zkpump-simple-pink-button',
                             onClick: () => setIsLogin(!isLogin)
                         }, isLogin ? 'Need an account? Register' : 'Already have an account? Login')
-                    ),
-                    React.createElement('div', { className: 'zkpump-text-center' },
-                        React.createElement('button', {
-                            type: 'button',
-                            className: 'zkpump-simple-pink-button',
-                            onClick: handleDiscordLogin
-                        }, 'Login with Discord')
                     )
                 )
             )

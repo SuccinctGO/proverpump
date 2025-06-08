@@ -8,64 +8,83 @@ const axios = require('axios');
 const cors = require('cors');
 const storage = require('./storage');
 const multer = require('multer');
+const { Server } = require('socket.io');
+const bcrypt = require('bcrypt');
+const { createClient } = require('@supabase/supabase-js');
 require('dotenv').config();
 
 const app = express();
 const server = http.createServer(app);
 
-// Налаштування CORS
-const corsOptions = {
-  origin: [
-    'https://proverpump.vercel.app',
-    'https://proverpump-git-main-istzzzs-projects.vercel.app',
-    'https://proverpump-ewqtdbfip-istzzzs-projects.vercel.app',
-    'http://localhost:3000'
-  ],
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
-  credentials: true,
-  preflightContinue: false,
-  optionsSuccessStatus: 204
-};
-
-app.use(cors(corsOptions));
-
-// Додаткові CORS заголовки для всіх запитів
+// Додаємо middleware для логування всіх запитів
 app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  const allowedOrigins = [
-    'https://proverpump.vercel.app',
-    'https://proverpump-git-main-istzzzs-projects.vercel.app',
-    'https://proverpump-ewqtdbfip-istzzzs-projects.vercel.app',
-    'http://localhost:3000'
-  ];
-  
-  if (allowedOrigins.includes(origin)) {
-    res.header('Access-Control-Allow-Origin', origin);
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
-    res.header('Access-Control-Allow-Credentials', 'true');
-  }
-  next();
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+    console.log('Request headers:', req.headers);
+    console.log('Request body:', req.body);
+    console.log('Request origin:', req.headers.origin);
+    next();
 });
 
-// Налаштування Socket.IO з CORS
-const io = socketIo(server, {
-  cors: {
-    origin: [
-      'https://proverpump.vercel.app',
-      'https://proverpump-git-main-istzzzs-projects.vercel.app',
-      'https://proverpump-ewqtdbfip-istzzzs-projects.vercel.app',
-      'http://localhost:3000'
-    ],
-    methods: ['GET', 'POST'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Origin'],
-    credentials: true
-  },
-  transports: ['websocket', 'polling'],
-  allowEIO3: true,
-  pingTimeout: 60000,
-  pingInterval: 25000
+// Налаштування CORS
+app.use((req, res, next) => {
+    const allowedOrigin = 'https://proverpump.vercel.app';
+    const origin = req.headers.origin;
+
+    console.log('CORS middleware - Origin:', origin);
+    console.log('CORS middleware - Allowed origin:', allowedOrigin);
+
+    if (origin === allowedOrigin) {
+        res.header('Access-Control-Allow-Origin', origin);
+        res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+        res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Origin, Accept, X-Requested-With');
+        res.header('Access-Control-Allow-Credentials', 'true');
+        res.header('Access-Control-Max-Age', '86400');
+    }
+
+    if (req.method === 'OPTIONS') {
+        console.log('Handling OPTIONS request');
+        return res.sendStatus(200);
+    }
+
+    next();
+});
+
+// Налаштування Socket.IO
+const io = new Server(server, {
+    cors: {
+        origin: 'https://proverpump.vercel.app',
+        methods: ['GET', 'POST'],
+        credentials: true,
+        allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'Accept', 'X-Requested-With']
+    },
+    transports: ['websocket', 'polling']
+});
+
+// Додаємо логування для Socket.IO
+io.on('connection', (socket) => {
+    console.log('Socket.IO connection established');
+    console.log('Socket ID:', socket.id);
+    console.log('Socket headers:', socket.handshake.headers);
+    console.log('Socket origin:', socket.handshake.headers.origin);
+
+    socket.on('disconnect', () => {
+        console.log('Socket.IO client disconnected:', socket.id);
+    });
+
+    socket.on('error', (error) => {
+        console.error('Socket.IO error:', error);
+    });
+});
+
+// Додаємо логування для помилок
+app.use((err, req, res, next) => {
+    console.error('Global error handler:');
+    console.error('Error:', err);
+    console.error('Request URL:', req.url);
+    console.error('Request method:', req.method);
+    console.error('Request headers:', req.headers);
+    console.error('Request body:', req.body);
+    res.status(500).json({ error: err.message });
 });
 
 const upload = multer({ storage: multer.memoryStorage() });
@@ -143,65 +162,151 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
-// Реєстрація
+// Ініціалізація Supabase
+const supabase = createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_KEY
+);
+
+// Реєстрація користувача
 app.post('/users/register', async (req, res) => {
-  const { nickname } = req.body;
-  if (!nickname || nickname.length < 3) {
-    return res.status(400).json({ error: 'Nickname must be 3+ characters' });
-  }
+    console.log('Registration request received');
+    console.log('Request body:', req.body);
+    
+    try {
+        const { username, password } = req.body;
 
-  try {
-    const userCheck = await pool.query('SELECT * FROM users WHERE nickname = $1', [nickname]);
-    if (userCheck.rows.length > 0) {
-      return res.status(400).json({ error: 'Nickname taken' });
+        if (!username || !password) {
+            console.log('Missing username or password');
+            return res.status(400).json({ error: 'Username and password are required' });
+        }
+
+        console.log('Checking for existing user:', username);
+        const { data: existingUser, error: checkError } = await supabase
+            .from('users')
+            .select()
+            .eq('username', username)
+            .single();
+
+        if (checkError && checkError.code !== 'PGRST116') {
+            console.error('Error checking existing user:', checkError);
+            throw checkError;
+        }
+
+        if (existingUser) {
+            console.log('Username already exists:', username);
+            return res.status(400).json({ error: 'Username already exists' });
+        }
+
+        const userId = uuidv4();
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        console.log('Creating new user:', username);
+        const { data: user, error: userError } = await supabase
+            .from('users')
+            .insert([
+                {
+                    userId,
+                    username,
+                    password: hashedPassword
+                }
+            ])
+            .select()
+            .single();
+
+        if (userError) {
+            console.error('Error creating user:', userError);
+            throw userError;
+        }
+
+        console.log('Creating wallet for user:', userId);
+        const { data: wallet, error: walletError } = await supabase
+            .from('wallets')
+            .insert([
+                {
+                    userId,
+                    balance: 1000,
+                    tokenBalances: {},
+                    tokens: []
+                }
+            ])
+            .select()
+            .single();
+
+        if (walletError) {
+            console.error('Error creating wallet:', walletError);
+            throw walletError;
+        }
+
+        const token = jwt.sign(
+            { userId },
+            process.env.JWT_SECRET,
+            { expiresIn: '7d' }
+        );
+
+        console.log('Registration successful for user:', username);
+        res.json({
+            token,
+            user: {
+                id: userId,
+                username: username
+            },
+            wallet
+        });
+    } catch (error) {
+        console.error('Registration error:', error);
+        res.status(500).json({ error: 'Registration failed: ' + error.message });
     }
-
-    const userId = uuidv4();
-    await pool.query('INSERT INTO users (userId, nickname) VALUES ($1, $2)', [userId, nickname]);
-    await pool.query(
-      'INSERT INTO wallets (userId, balance, tokenBalances, tokens) VALUES ($1, $2, $3, $4)',
-      [userId, 10000, '{}', '[]']
-    );
-
-    const token = jwt.sign({ userId, nickname }, process.env.JWT_SECRET, { expiresIn: '1h' });
-    res.json({
-      user: { userId, nickname },
-      wallet: { userId, balance: 10000, tokenBalances: {}, tokens: [] },
-      token,
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Failed to register' });
-  }
 });
 
-// Логін
+// Логін користувача
 app.post('/users/login', async (req, res) => {
-  const { nickname } = req.body;
-  if (!nickname) {
-    return res.status(400).json({ error: 'Nickname required' });
-  }
+    try {
+        const { username, password } = req.body;
 
-  try {
-    const userResult = await pool.query('SELECT * FROM users WHERE nickname = $1', [nickname]);
-    if (userResult.rows.length === 0) {
-      return res.status(404).json({ error: 'User not found' });
+        if (!username || !password) {
+            return res.status(400).json({ error: 'Username and password are required' });
+        }
+
+        // Знаходимо користувача
+        const userResult = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
+        if (userResult.rows.length === 0) {
+            return res.status(401).json({ error: 'Invalid credentials' });
+        }
+
+        const user = userResult.rows[0];
+        const walletResult = await pool.query('SELECT * FROM wallets WHERE userId = $1', [user.userId]);
+        if (walletResult.rows.length === 0) {
+            return res.status(404).json({ error: 'Wallet not found' });
+        }
+
+        const wallet = walletResult.rows[0];
+
+        // Перевіряємо пароль
+        const validPassword = await bcrypt.compare(password, user.password);
+        if (!validPassword) {
+            return res.status(401).json({ error: 'Invalid credentials' });
+        }
+
+        // Генеруємо JWT токен
+        const token = jwt.sign(
+            { userId: user.userId },
+            process.env.JWT_SECRET,
+            { expiresIn: '7d' }
+        );
+
+        res.json({
+            token,
+            user: {
+                id: user.userId,
+                username: user.username
+            },
+            wallet
+        });
+    } catch (error) {
+        console.error('Login error:', error);
+        res.status(500).json({ error: 'Login failed' });
     }
-
-    const user = userResult.rows[0];
-    const walletResult = await pool.query('SELECT * FROM wallets WHERE userId = $1', [user.userId]);
-    if (walletResult.rows.length === 0) {
-      return res.status(404).json({ error: 'Wallet not found' });
-    }
-
-    const wallet = walletResult.rows[0];
-    const token = jwt.sign({ userId: user.userId, nickname: user.nickname }, process.env.JWT_SECRET, { expiresIn: '1h' });
-
-    res.json({ user, wallet, token });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Failed to login' });
-  }
 });
 
 // Discord OAuth2
@@ -739,38 +844,12 @@ app.get('/prover-status', authenticateToken, async (req, res) => {
   }
 });
 
-// WebSocket
-io.on('connect_error', (error) => {
-  console.error('Socket.IO connection error:', error);
-});
-
-io.on('connect', (socket) => {
-  console.log('Client connected:', socket.id);
-  
-  socket.on('error', (error) => {
-    console.error('Socket error:', error);
-  });
-
-  socket.on('subscribeTokens', () => {
-    socket.join('tokens');
-  });
-
-  socket.on('subscribeTransactions', () => {
-    socket.join('transactions');
-  });
-
-  socket.on('subscribeWallet', (userId) => {
-    socket.join(`wallet_${userId}`);
-  });
-
-  socket.on('subscribeToken', (tokenId) => {
-    socket.join(`token_${tokenId}`);
-  });
-
-  socket.on('disconnect', () => {
-    console.log('Client disconnected:', socket.id);
-  });
-});
-
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+server.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+    console.log('Environment variables check:', {
+        SUPABASE_URL: process.env.SUPABASE_URL ? 'Set' : 'Not set',
+        SUPABASE_KEY: process.env.SUPABASE_KEY ? 'Set' : 'Not set',
+        JWT_SECRET: process.env.JWT_SECRET ? 'Set' : 'Not set'
+    });
+});

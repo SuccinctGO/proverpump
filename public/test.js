@@ -81,17 +81,32 @@ function App() {
         }
 
         // Завантаження токенів
-        const fetchWithCredentials = (url, options = {}) => {
-            return fetch(url, {
-                ...options,
+        const fetchWithCredentials = async (url, options = {}) => {
+            console.log('Making request to:', url);
+            console.log('Request options:', options);
+            
+            const defaultOptions = {
                 credentials: 'include',
                 headers: {
-                    ...options.headers,
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
-                    'Origin': window.location.origin
+                    'Origin': 'https://proverpump.vercel.app'
                 }
-            });
+            };
+
+            try {
+                const response = await fetch(url, { ...defaultOptions, ...options });
+                console.log('Response status:', response.status);
+                console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response;
+            } catch (error) {
+                console.error('Fetch error:', error);
+                throw error;
+            }
         };
 
         const fetchTokens = async () => {
@@ -124,24 +139,25 @@ function App() {
             reconnection: true,
             reconnectionAttempts: 5,
             reconnectionDelay: 1000,
-            timeout: 20000,
             extraHeaders: {
-                'Access-Control-Allow-Origin': window.location.origin,
-                'Origin': window.location.origin
+                'Origin': 'https://proverpump.vercel.app'
             }
         });
         socket.on('connect', () => {
-            console.log('WebSocket connected');
+            console.log('Socket connected successfully');
+            console.log('Socket ID:', socket.id);
             socket.emit('subscribeTokens');
         });
         socket.on('newToken', (newToken) => {
             setTokens((prev) => [...prev, newToken]);
         });
-        socket.on('disconnect', () => {
-            console.log('WebSocket disconnected');
+        socket.on('disconnect', (reason) => {
+            console.log('Socket disconnected:', reason);
         });
         socket.on('connect_error', (error) => {
             console.error('Socket connection error:', error);
+            console.log('Socket connection state:', socket.connected);
+            console.log('Socket transport:', socket.io.engine.transport.name);
         });
         socket.on('error', (error) => {
             console.error('Socket error:', error);
