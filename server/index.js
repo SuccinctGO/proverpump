@@ -162,6 +162,7 @@ process.on('unhandledRejection', (reason, promise) => {
 });
 
 // Додаємо обробку помилок для Supabase
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 supabase.on('error', (error) => {
     console.error('\n=== Supabase Error ===');
     console.error('Time:', new Date().toISOString());
@@ -235,12 +236,6 @@ const authenticateToken = (req, res, next) => {
     next();
   });
 };
-
-// Ініціалізація Supabase
-const supabase = createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_KEY
-);
 
 // Реєстрація користувача
 app.post('/users/register', async (req, res) => {
