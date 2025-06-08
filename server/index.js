@@ -91,6 +91,11 @@ const requiredEnvVars = [
   'SUPABASE_KEY'
 ];
 
+console.log('Environment variables check:');
+requiredEnvVars.forEach(varName => {
+  console.log(`${varName}: ${process.env[varName] ? '✓' : '✗'}`);
+});
+
 const missingEnvVars = requiredEnvVars.filter(varName => !process.env[varName]);
 if (missingEnvVars.length > 0) {
   console.error('Missing required environment variables:', missingEnvVars);
@@ -158,10 +163,13 @@ const supabase = createClient(
 
 // Реєстрація користувача
 app.post('/users/register', async (req, res) => {
-    console.log('Registration request received');
-    console.log('Request headers:', req.headers);
-    console.log('Request body:', req.body);
+    console.log('=== Registration Request ===');
+    console.log('Time:', new Date().toISOString());
+    console.log('Request headers:', JSON.stringify(req.headers, null, 2));
+    console.log('Request body:', JSON.stringify(req.body, null, 2));
     console.log('Request origin:', req.headers.origin);
+    console.log('Request method:', req.method);
+    console.log('Request path:', req.path);
     
     try {
         const { username, password } = req.body;
@@ -241,6 +249,7 @@ app.post('/users/register', async (req, res) => {
         );
 
         console.log('Registration successful for user:', username);
+        console.log('=== End Registration Request ===');
         res.json({
             token,
             user: {
@@ -251,6 +260,7 @@ app.post('/users/register', async (req, res) => {
         });
     } catch (error) {
         console.error('Registration error:', error);
+        console.log('=== End Registration Request with Error ===');
         res.status(500).json({ error: 'Registration failed: ' + error.message });
     }
 });
