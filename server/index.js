@@ -18,7 +18,7 @@ const server = http.createServer(app);
 
 // CORS configuration
 const corsOptions = {
-  origin: ['https://proverpump.vercel.app', 'https://proverpump-git-main-istzzzs-projects.vercel.app'],
+  origin: 'https://proverpump.vercel.app',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'Accept', 'X-Requested-With'],
   credentials: true
