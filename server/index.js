@@ -76,12 +76,15 @@ io.on('connection', (socket) => {
 
 // Додаємо middleware для обробки помилок
 app.use((err, req, res, next) => {
-    console.error('\n=== Error ===');
+    console.error('\n=== Express Error ===');
     console.error('Time:', new Date().toISOString());
     console.error('Path:', req.path);
+    console.error('Method:', req.method);
+    console.error('Headers:', req.headers);
+    console.error('Body:', req.body);
     console.error('Error:', err);
     console.error('Stack:', err.stack);
-    console.error('================\n');
+    console.error('========================\n');
     res.status(500).json({ error: err.message });
 });
 
@@ -146,6 +149,7 @@ process.on('uncaughtException', (error) => {
     console.error('Error:', error);
     console.error('Stack:', error.stack);
     console.error('========================\n');
+    // Не завершуємо процес, щоб Vercel міг отримати логи
 });
 
 process.on('unhandledRejection', (reason, promise) => {
@@ -154,48 +158,71 @@ process.on('unhandledRejection', (reason, promise) => {
     console.error('Reason:', reason);
     console.error('Promise:', promise);
     console.error('========================\n');
+    // Не завершуємо процес, щоб Vercel міг отримати логи
 });
 
-// Налаштування підключення до бази даних
-const pool = new Pool({
-  user: process.env.DB_USER,
-  host: process.env.DB_HOST,
-  database: process.env.DB_NAME,
-  password: process.env.DB_PASSWORD,
-  port: process.env.DB_PORT,
-  ssl: {
-    rejectUnauthorized: false
-  },
-  max: 20, // максимальна кількість клієнтів в пулі
-  idleTimeoutMillis: 30000, // час очікування для неактивних клієнтів
-  connectionTimeoutMillis: 2000, // час очікування для підключення
+// Додаємо обробку помилок для Supabase
+supabase.on('error', (error) => {
+    console.error('\n=== Supabase Error ===');
+    console.error('Time:', new Date().toISOString());
+    console.error('Error:', error);
+    console.error('Stack:', error.stack);
+    console.error('========================\n');
 });
 
-// Test database connection
-pool.connect((err, client, release) => {
-  if (err) {
-    console.error('Error connecting to the database:', err);
-    return;
-  }
-  console.log('Successfully connected to Supabase database');
-  release();
+// Додаємо обробку помилок для Socket.IO
+io.on('error', (error) => {
+    console.error('\n=== Socket.IO Error ===');
+    console.error('Time:', new Date().toISOString());
+    console.error('Error:', error);
+    console.error('Stack:', error.stack);
+    console.error('========================\n');
 });
 
-// Перевірка підключення до бази даних
-pool.connect()
-  .then(() => {
-    console.log('Successfully connected to Supabase PostgreSQL database');
-  })
-  .catch(err => {
-    console.error('Failed to connect to Supabase PostgreSQL database:', err);
-    process.exit(1);
-  });
-
-// Обробка помилок підключення до бази даних
-pool.on('error', (err) => {
-  console.error('Unexpected error on idle client', err);
-  process.exit(-1);
+// Додаємо обробку помилок для HTTP сервера
+server.on('error', (error) => {
+    console.error('\n=== HTTP Server Error ===');
+    console.error('Time:', new Date().toISOString());
+    console.error('Error:', error);
+    console.error('Stack:', error.stack);
+    console.error('========================\n');
 });
+
+// Додаємо обробку помилок для бази даних
+const db = new Pool({
+    user: process.env.DB_USER,
+    host: process.env.DB_HOST,
+    database: process.env.DB_NAME,
+    password: process.env.DB_PASSWORD,
+    port: process.env.DB_PORT,
+});
+
+db.on('error', (err) => {
+    console.error('\n=== Database Error ===');
+    console.error('Time:', new Date().toISOString());
+    console.error('Error:', err);
+    console.error('Stack:', err.stack);
+    console.error('========================\n');
+});
+
+// Додаємо перевірку підключення до бази даних
+db.connect()
+    .then(() => {
+        console.log('\n=== Database Connection Successful ===');
+        console.log('Time:', new Date().toISOString());
+        console.log('Connected to database:', process.env.DB_NAME);
+        console.log('Host:', process.env.DB_HOST);
+        console.log('Port:', process.env.DB_PORT);
+        console.log('User:', process.env.DB_USER);
+        console.log('=====================================\n');
+    })
+    .catch((err) => {
+        console.error('\n=== Database Connection Failed ===');
+        console.error('Time:', new Date().toISOString());
+        console.error('Error:', err);
+        console.error('Stack:', err.stack);
+        console.error('================================\n');
+    });
 
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
