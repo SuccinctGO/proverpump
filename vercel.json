@@ -22,6 +22,14 @@
       }
     },
     {
+      "src": "/(.*\\..*)",
+      "dest": "/public/$1"
+    },
+    {
+      "src": "/",
+      "dest": "/public/index.html"
+    },
+    {
       "src": "/(.*)",
       "dest": "server/index.js",
       "headers": {
@@ -33,7 +41,6 @@
     }
   ],
   "env": {
-    "NODE_ENV": "production",
-    "SUPABASE_URL": "https://fzvpbsoybaecxoltiqjf.supabase.co"
+    "NODE_ENV": "production"
   }
 } 
